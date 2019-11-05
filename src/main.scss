@@ -1,0 +1,19 @@
+html {
+    font-size: 14px;
+}
+
+$theme-colors: (
+    "dark-medium": #41474e,
+    "light-medium": #b2bcc6
+);
+
+@import 'node_modules/bootstrap/scss/bootstrap';
+@import 'node_modules/bootstrap-vue/src/index.scss';
+
+
+
+.bg-transparency-grid {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wsDEisardEufgAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAJUlEQVQY02NkYGCQY0AC////R+YyMDEQAJQrYEG3k5GRkd5uAACN8gYtdfoL2QAAAABJRU5ErkJggg==');
+    background-repeat: repeat;
+}
+
