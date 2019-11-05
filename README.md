@@ -1,4 +1,4 @@
-# mockup
+# Open Graphica Client
 
 ## Project setup
 ```
