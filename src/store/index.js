@@ -54,6 +54,7 @@ const store = new Vuex.Store({
                             w: 600,
                             h: 800
                         },
+                    /*
                         items: [
                             {
                                 type: 'group',
@@ -66,9 +67,7 @@ const store = new Vuex.Store({
                                     h: 400
                                 },
                                 style: {
-                                    /*background: {
-                                        color: 'ffff00ff'
-                                    }*/
+                                   
                                 },
                                 items: [
                                     {
@@ -153,6 +152,7 @@ const store = new Vuex.Store({
                                 ]
                             }
                         ]
+                 */
                     }
                 ]
             }
