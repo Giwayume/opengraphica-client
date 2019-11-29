@@ -3,7 +3,10 @@
         <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center">
             <div class="p-5">
                 <artboard v-if="artboard" ref="artboard" :definition="artboard" />
-                <p v-else>Add an artboard to continue.</p>
+                <p v-else>
+                    <template v-if="pages.length > 0">Add an artboard to continue.</template>
+                    <template v-else>Add a page to continue.</template>
+                </p>
             </div>
         </div>
         <!-- Control display container -->
@@ -54,7 +57,13 @@ export default {
         },
         outline() {
             const selectedPage = store.state.selectedPage;
-            return store.state.pages.filter(page => page.id == selectedPage)[0].outline;
+            if (selectedPage != null && this.pages.length > 0) {
+                return this.pages.filter(page => page.id == selectedPage)[0].outline;
+            }
+            return [];
+        },
+        pages() {
+            return store.state.pages;
         }
     },
     watch: {
@@ -73,26 +82,30 @@ export default {
     },
     methods: {
         calcElementRootPositionByKey(pid) {
-            const accessors = pid.split('.');
-            let currentElement = this.artboard;
             let x = 0;
             let y = 0;
-            for (let i = 1; i < accessors.length; i++) {
-                const index = parseInt(accessors[i], 10);
-                if (currentElement.items) {
-                    currentElement = currentElement.items[index];
-                    if (currentElement.position) {
-                        x += currentElement.position.x || 0;
-                        y += currentElement.position.y || 0;
+            let w = 0;
+            let h = 0;
+            if (this.$refs.artboard) {
+                const accessors = pid.split('.');
+                let currentElement = this.artboard;
+                for (let i = 1; i < accessors.length; i++) {
+                    const index = parseInt(accessors[i], 10);
+                    if (currentElement.items) {
+                        currentElement = currentElement.items[index];
+                        if (currentElement.position) {
+                            x += currentElement.position.x || 0;
+                            y += currentElement.position.y || 0;
+                        }
                     }
                 }
-            }
-            let w = currentElement.position && currentElement.position.w || currentElement.dimensions && currentElement.dimensions.w || 0;
-            let h = currentElement.position && currentElement.position.h || currentElement.dimensions && currentElement.dimensions.h || 0;
-            if (w == 'auto' || h == 'auto') {
-                const pidEl = this.$refs.artboard.$el.querySelector(`[data-pid="${pid}"]`);
-                w = pidEl.clientWidth;
-                h = pidEl.clientHeight;
+                w = currentElement.position && currentElement.position.w || currentElement.dimensions && currentElement.dimensions.w || 0;
+                h = currentElement.position && currentElement.position.h || currentElement.dimensions && currentElement.dimensions.h || 0;
+                if (w == 'auto' || h == 'auto') {
+                    const pidEl = this.$refs.artboard.$el.querySelector(`[data-pid="${pid}"]`);
+                    w = pidEl.clientWidth;
+                    h = pidEl.clientHeight;
+                }
             }
             return {
                 x, y, w, h

@@ -1,12 +1,12 @@
 <template>
     <b-card no-body class="border-0 m-0 bg-transparent">
         <b-card-header header-tag="header" role="tab"
-            class="d-flex flex-row p-0 border-0 rounded-0 text-nowrap align-items-center bg-dark text-uppercase">
+            class="d-flex flex-row p-0 border-0 rounded-0 text-nowrap align-items-center bg-dark">
             <b-button block href="#" variant="dark"
                 class="d-flex flex-row text-left rounded-0 px-3 py-2 m-0 text-nowrap text-light overflow-hidden"
                 style="border-top: 1px solid #555b60"
                 v-b-toggle="'accordion-section-' + uuid">
-                <span class="text-nowrap text-truncate overflow-hidden">{{ title }}</span>
+                <strong class="text-nowrap text-truncate overflow-hidden">{{ title }}</strong>
                 <i class="fas text-center ml-auto h4 my-0" :class="{ 'fa-angle-right': !expanded, 'fa-angle-down': expanded }" style="width: 1em">
                     <span class="sr-only">{{ expanded ? 'Expanded' : 'Collapsed' }}</span>
                 </i>

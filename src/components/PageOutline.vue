@@ -1,6 +1,15 @@
 <template>
-    <div role="tablist" class="d-block w-100 overflow-hidden">
-        <b-card v-for="(item, i) in outline" :key="i" :data-pid="(pid ? (pid+'.') : '') + i" no-body class="border-0 m-0">
+    <div v-if="selectedPage != null" role="tablist" class="d-block flex-grow-1 w-100">
+        <div v-if="isRoot" class="d-flex bg-dark-medium text-white px-3 py-2 align-items-center">
+            <strong>{{ selectedPage.name }}</strong>
+            <b-button
+                variant="dark-medium" size="sm" class="py-0 ml-auto"
+                v-b-tooltip="{ delay: { show: 400 } }" title="New Artboard"
+                @click="addArtboard()">
+                <i class="fas fa-plus" style="width: 1.2em;"></i>
+            </b-button>
+        </div>
+        <b-card v-for="(item, i) in outline" :key="i" :data-pid="(pid ? (pid+'.') : '') + i" no-body class="border-0 rounded-0 m-0" :class="{ ' overflow-hidden': isRoot }">
             <b-card-header header-tag="header" role="tab"
                 class="d-flex flex-row p-0 border-0 rounded-0 text-nowrap align-items-center"
                 :class="{
@@ -75,8 +84,8 @@ export default {
     computed: {
         outline() {
             let outlineRoot;
-            if (this.isRoot) {
-                outlineRoot = store.state.pages.filter(page => page.id == store.state.selectedPage)[0].outline;
+            if (this.isRoot && this.selectedPage != null) {
+                outlineRoot = this.selectedPage.outline;
             }
             return outlineRoot || this.items;
         },
@@ -90,6 +99,13 @@ export default {
         selectedElement() {
             if (this.isRoot) {
                 return store.state.selectedElement;
+            } else {
+                return null;
+            }
+        },
+        selectedPage() {
+            if (this.isRoot) {
+                return store.state.pages.filter(page => page.id == store.state.selectedPage)[0];
             } else {
                 return null;
             }
@@ -123,6 +139,9 @@ export default {
         }
     },
     methods: {
+        addArtboard() {
+            store.commit('addArtboard');
+        },
         onKeyDownSelectionButton() {
         },
         setEditingElement(i) {

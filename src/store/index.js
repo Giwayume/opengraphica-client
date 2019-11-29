@@ -6,6 +6,7 @@ Vue.use(Vuex);
 Vue.use(VuexHistory);
 
 const getElementDefinition = function(state, pageId, artboardId, elementKey) {
+    if (!elementKey) return null;
     const page = state.pages.filter((page) => page.id == pageId)[0];
     const artboard = page.outline.filter((artboard) => artboard.id == artboardId)[0];
     let currentElement = artboard;
@@ -43,7 +44,7 @@ const store = new Vuex.Store({
             {
                 id: 0,
                 name: 'Page 1',
-                artboardIdCounter: 1,
+                artboardIdCounter: 2,
                 outline: [
                     {
                         id: 0,
@@ -53,112 +54,56 @@ const store = new Vuex.Store({
                         dimensions: {
                             w: 600,
                             h: 800
-                        },
-                    /*
-                        items: [
-                            {
-                                type: 'group',
-                                name: 'Header',
-                                expanded: true,
-                                position: {
-                                    x: 16,
-                                    y: 16,
-                                    w: 300,
-                                    h: 400
-                                },
-                                style: {
-                                   
-                                },
-                                items: [
-                                    {
-                                        type: 'group',
-                                        name: 'List',
-                                        expanded: true,
-                                        position: {
-                                            x: 16,
-                                            y: 50
-                                        },
-                                        items: [
-                                            {
-                                                type: 'text',
-                                                name: 'Headline',
-                                                expanded: true,
-                                                data: 'Foo Bar',
-                                                position: {
-                                                    x: 16,
-                                                    y: 16,
-                                                    w: 200,
-                                                    h: 'auto'
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        type: 'text',
-                                        name: 'Headline',
-                                        expanded: true,
-                                        data: 'Test this',
-                                        position: {
-                                            x: 16,
-                                            y: 16,
-                                            w: 200,
-                                            h: 'auto'
-                                        }
-                                    },
-                                    {
-                                        type: 'rectangle',
-                                        name: 'Rectangle',
-                                        expanded: true,
-                                        position: {
-                                            x: 16,
-                                            y: 64,
-                                            w: 200,
-                                            h: 50
-                                        },
-                                        style: {
-                                            background: {
-                                                color: '00ffffff'
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                type: 'group',
-                                name: 'Footer',
-                                position: {
-                                    x: 0,
-                                    y: 500,
-                                    w: 600,
-                                    h: 50
-                                },
-                                style: {
-                                    background: {
-                                        color: 'ffff00ff'
-                                    }
-                                },
-                                items: [
-                                    {
-                                        type: 'text',
-                                        name: '',
-                                        data: 'Some Text',
-                                        position: {
-                                            x: 16,
-                                            y: 16,
-                                            w: 600 - 32,
-                                            h: 'auto'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                 */
+                        }
+                    },
+                    {
+                        id: 1,
+                        type: 'artboard',
+                        name: 'Mobile',
+                        expanded: true,
+                        dimensions: {
+                            w: 400,
+                            h: 800
+                        }
                     }
                 ]
             }
         ]
     },
     mutations: {
+        addArtboard(state) {
+            const page = state.pages.filter(page => page.id === state.selectedPage)[0];
+            if (page) {
+                page.outline.push({
+                    id: page.artboardIdCounter++,
+                    type: 'artboard',
+                    name: 'Artboard ' + page.artboardIdCounter,
+                    dimensions: {
+                        w: 500,
+                        h: 500
+                    }
+                });
+            }
+        },
+        addPage(state) {
+            state.pages.push({
+                id: state.pageIdCounter++,
+                name: 'Page ' + state.pageIdCounter,
+                artboardIdCounter: 1,
+                outline: [
+                    {
+                        id: 0,
+                        type: 'artboard',
+                        name: 'Artboard 1',
+                        dimensions: {
+                            w: 500,
+                            h: 500
+                        }
+                    }
+                ]
+            });
+            saveHistorySnapshot(state);
+        },
         deleteElement(state, pid) {
             if (pid.includes('.')) {
                 const pidSplit = pid.split('.');
@@ -169,22 +114,54 @@ const store = new Vuex.Store({
             } else {
                 const page = state.pages.filter((page) => page.id == state.selectedPage)[0];
                 page.outline.splice(page.outline.map(artboard => artboard.id).indexOf(state.selectedArtboard), 1);
+                if (page.outline.length === 0) {
+                    state.selectedElement = null;
+                    state.editingElement = null;
+                }
             }
             saveHistorySnapshot(state);
+        },
+        deletePage(state, pageId) {
+            state.pages.splice(state.pages.map(page => page.id).indexOf(pageId), 1);
+            state.selectedElement = null;
+            state.editingElement = null;
+            if (state.pages.length > 0) {
+                state.selectedPage = state.pages[0].id;
+            }
         },
         setRecordHistory(state, recordHistory) {
             state.recordHistory = recordHistory;
         },
         setEditingElement(state, editingElement) {
+            state.selectedArtboard = parseInt((editingElement || '').split('.')[0], 10) || 0;
             state.editingElement = editingElement;
+            const selectedElementArtboard = parseInt((state.selectedElement || '').split('.')[0], 10) || 0;
+            if (selectedElementArtboard !== state.selectedArtboard) {
+                state.selectedElement = editingElement;
+            }
         },
         setSelectedElement(state, selectedElement) {
+            state.selectedArtboard = parseInt((selectedElement || '').split('.')[0], 10) || 0;
             state.selectedElement = selectedElement;
+            const editingElementArtboard = parseInt((state.editingElement || '').split('.')[0], 10) || 0;
+            if (editingElementArtboard !== state.selectedArtboard) {
+                state.editingElement = selectedElement;
+            }
+        },
+        setSelectedPage(state, selectedPage) {
+            state.selectedPage = selectedPage;
         },
         updateElementDefinition(state, { pid, definition }) {
             let elementDefinition = getElementDefinition(state, state.selectedPage, state.selectedArtboard, pid);
             for (let prop in definition) {
                 elementDefinition[prop] = JSON.parse(JSON.stringify(definition[prop]));
+            }
+            saveHistorySnapshot(state);
+        },
+        updatePageDefinition(state, { id, definition }) {
+            let pageDefinition = state.pages.filter(page => page.id == id)[0];
+            for (let prop in definition) {
+                pageDefinition[prop] = JSON.parse(JSON.stringify(definition[prop]));
             }
             saveHistorySnapshot(state);
         },

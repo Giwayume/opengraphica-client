@@ -234,8 +234,7 @@ export default {
             required: true
         },
         pid: {
-            type: String,
-            required: true
+            type: String
         }
     },
     data() {

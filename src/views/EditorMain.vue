@@ -1,12 +1,13 @@
 <template>
     <section aria-label="OpenGraphica Editor" class="d-flex flex-column">
-        <div class="flex-grow-0 flex-shrink-1 app-header text-white px-3 pt-1 pb-2 d-flex flex-row justify-content-between">
+        <div class="flex-grow-0 flex-shrink-1 app-header text-white px-3 py-2 d-flex flex-row justify-content-between">
             <action-toolbar />
         </div>
         <div class="position-relative flex-grow-1">
             <rs-panes ref="rsPanes1" split-to="columns" :allow-resize="true" :size="sidebarInitialSize"
                 :max-size="sidebarMaxWidth" resizer-color="#4b5157" @update:size="onUpdatePaneSize($event)">
-                <div slot="firstPane" class="h-100 bg-dark">
+                <div slot="firstPane" class="h-100 bg-dark d-flex flex-column">
+                    <page-selector />
                     <page-outline :is-root="true" />
                 </div>
                 <rs-panes ref="rsPanes2" slot="secondPane" split-to="columns" :allow-resize="true"
@@ -28,6 +29,7 @@
 import ActionToolbar from '@/components/ActionToolbar.vue';
 import ArtboardViewer from '@/components/ArtboardViewer.vue';
 import PageOutline from '@/components/PageOutline.vue';
+import PageSelector from '@/components/PageSelector.vue';
 import EditorSettings from '@/components/EditorSettings.vue';
 import ResSplitPane from 'vue-resize-split-pane';
 
@@ -38,6 +40,7 @@ export default {
         'artboard-viewer': ArtboardViewer,
         'editor-settings': EditorSettings,
         'page-outline': PageOutline,
+        'page-selector': PageSelector,
         'rs-panes': ResSplitPane
     },
     data() {
