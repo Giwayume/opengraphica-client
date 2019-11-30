@@ -116,7 +116,7 @@ export default {
         updateSettings() {
             this.settings.dimensions.w = parseInt(this.settings.dimensions.w, 10);
             this.settings.dimensions.h = parseInt(this.settings.dimensions.h, 10);
-            store.commit('updateElementDefinition', {
+            store.dispatch('updateElementDefinition', {
                 pid: this.pid,
                 definition: {
                     name: this.settings.name,

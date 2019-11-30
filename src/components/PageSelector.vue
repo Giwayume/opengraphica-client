@@ -9,21 +9,23 @@
                 <i class="fas fa-plus" style="width: 1.2em;"></i>
             </b-button>
         </div>
-        <b-button
-            v-for="page in pages" :key="page.id"
-            href="#"
-            block
-            :variant="selectedPage.id === page.id && !editingElement ? 'primary' : 'dark'"
-            class="text-left rounded-0 px-1 py-1 m-0"
-            @click="selectPage(page.id)"
-        >
-            <i class="fas text-center fa-caret-down invisible" style="width: 1.2em;"></i>
-            <i class="fas text-center mr-1" :class="{
-                    'fa-file': selectedPage.id !== page.id,
-                    'fa-edit': selectedPage.id === page.id
-                }" style="width: 1.5em;"></i>
-            <component :is="selectedPage.id === page.id ? 'strong' : 'span'">{{ page.name }}</component>
-        </b-button>
+        <div ref="pageButtons" style="max-height: 105px; overflow-y: auto; overflow-x: hidden;">
+            <b-button
+                v-for="page in pages" :key="page.id"
+                href="#"
+                block
+                :variant="selectedPage.id === page.id && !editingElement ? 'primary' : 'dark'"
+                class="text-left rounded-0 px-1 py-1 m-0"
+                @click="selectPage(page.id)"
+            >
+                <i class="fas text-center fa-caret-down invisible" style="width: 1.2em;"></i>
+                <i class="fas text-center mr-1" :class="{
+                        'fa-file': selectedPage.id !== page.id,
+                        'fa-edit': selectedPage.id === page.id
+                    }" style="width: 1.5em;"></i>
+                <component :is="selectedPage.id === page.id ? 'strong' : 'span'">{{ page.name }}</component>
+            </b-button>
+        </div>
     </div>
 </template>
 
@@ -43,16 +45,19 @@ export default {
         }
     },
     methods: {
-        addPage() {
-            store.commit('addPage');
-            store.commit('setSelectedPage', store.state.pages[store.state.pages.length - 1].id);
-            store.commit('setEditingElement', '0');
-            store.commit('setSelectedElement', '0');
+        async addPage() {
+            store.dispatch('addPage');
+            store.dispatch('setSelectedPage', store.state.pages[store.state.pages.length - 1].id);
+            store.dispatch('setEditingElement', '0');
+            store.dispatch('setSelectedElement', '0');
+            await this.$nextTick();
+            const lastButton = this.$refs.pageButtons.querySelector('.btn:last-child');
+            lastButton && lastButton.scrollIntoView();
         },
         selectPage(pageId) {
-            store.commit('setEditingElement', null);
-            store.commit('setSelectedElement', null);
-            store.commit('setSelectedPage', pageId);
+            store.dispatch('setEditingElement', null);
+            store.dispatch('setSelectedElement', null);
+            store.dispatch('setSelectedPage', pageId);
         }
     }
 }

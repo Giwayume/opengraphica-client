@@ -14,20 +14,26 @@ export default {
             // Delete element
             if (!e.shiftKey && !e.ctrlKey && e.keyCode == 46) {
                 if (!e.target || !['input', 'textarea'].includes((e.target.tagName || '').toLowerCase())) {
-                    const parentElement = store.state.selectedElement.replace(/\.[0-9]{0,8}$/g, '');
-                    const selectedElement = store.state.selectedElement;
-                    store.commit('setEditingElement', parentElement);
-                    store.commit('setSelectedElement', parentElement);
-                    store.commit('deleteElement', selectedElement);
+                    let newSelectedElements = [];
+                    for (let i = store.state.selectedElements.length; i >= 0; i--) {
+                        const selectedElement = store.state.selectedElements[i];
+                        const parentElement = selectedElement.replace(/\.[0-9]{0,8}$/g, '');
+                        newSelectedElements.push(parentElement);
+                        if (i === 0) {
+                            store.dispatch('setEditingElement', parentElement);
+                        }
+                        store.dispatch('deleteElement', selectedElement);
+                    }
+                    store.dispatch('setSelectedElements', newSelectedElements);
                 }
             }
             // Ctrl + Z
             if (e.ctrlKey && !e.shiftKey && e.keyCode == 90) {
-                store.commit('undoHistory');
+                store.dispatch('undoHistory');
             }
             // Ctrl + Shift + Z  OR  Ctrl + Y
             if (e.ctrlKey && ((e.shiftKey && e.keyCode == 90) || (!e.shiftKey && e.keyCode == 89))) {
-                store.commit('redoHistory');
+                store.dispatch('redoHistory');
             }
         });
         window.addEventListener('resize', (e) => {

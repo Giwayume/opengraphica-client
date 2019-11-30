@@ -1,19 +1,21 @@
 <template>
     <div class="position-relative w-100 h-100">
         <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center">
-            <div class="p-5">
-                <artboard v-if="artboard" ref="artboard" :definition="artboard" />
-                <p v-else>
-                    <template v-if="pages.length > 0">Add an artboard to continue.</template>
-                    <template v-else>Add a page to continue.</template>
-                </p>
+            <div v-if="artboards && artboards.length > 0" class="position-relative" :style="{
+                    transform: 'translate(' + panX + 'px, ' + panY + 'px)'
+                }">
+                <artboard v-for="(artboard, i) in artboards" :key="artboard.id" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
             </div>
+            <p v-else>
+                <template v-if="pages.length > 0">Add an artboard to continue.</template>
+                <template v-else>Add a page to continue.</template>
+            </p>
         </div>
         <!-- Control display container -->
-        <div class="position-absolute" style="top:0; right:0; left:0; bottom: 0">
-        </div>
+        <!--div class="position-absolute" style="top:0; right:0; left:0; bottom: 0">
+        </div-->
         <!-- Click trap -->
-        <div ref="clickTrap"
+        <!--div ref="clickTrap"
             tabindex="0"
             class="position-absolute" style="top:0; right:0; left:0; bottom: 0"
             @keydown="onKeyDownClickTrap"
@@ -31,7 +33,7 @@
                 <div class="editing-element-outline-control editing-element-outline-control-bottom"></div>
                 <div class="editing-element-outline-control editing-element-outline-control-bottom editing-element-outline-control-right"></div>
             </div>
-        </div>
+        </div-->
     </div>
 </template>
 
@@ -45,9 +47,8 @@ export default {
         'artboard': Artboard
     },
     computed: {
-        artboard() {
-            const selectedArtboard = store.state.selectedArtboard;
-            return this.outline.filter(artboard => artboard.id == selectedArtboard)[0];
+        artboards() {
+            return this.outline;
         },
         editingElement() {
             return store.state.editingElement;
@@ -64,6 +65,12 @@ export default {
         },
         pages() {
             return store.state.pages;
+        },
+        panX() {
+            return store.state.canvas.pan.x;
+        },
+        panY() {
+            return store.state.canvas.pan.y;
         }
     },
     watch: {
@@ -146,7 +153,7 @@ export default {
         onMouseDownClickTrap(e) {
             const selectedElement = this.getPidUnderMouse(e);
             if (selectedElement) {
-                store.commit('setSelectedElement', selectedElement);
+                store.dispatch('setSelectedElement', selectedElement);
             }
             this.$refs.clickTrap.focus();
         },
@@ -156,11 +163,12 @@ export default {
         onDoubleClickClickTrap(e) {
             const editingElement = this.getPidUnderMouse(e);
             if (editingElement) {
-                store.commit('setEditingElement', editingElement);
+                store.dispatch('setEditingElement', editingElement);
             }
             this.$refs.clickTrap.focus();
         },
         positionEditingElement(newElement) {
+            /*
             if (newElement) {
                 const position = this.calcElementRootPositionByKey(newElement);
                 const viewRects = this.$el.getBoundingClientRect();
@@ -170,8 +178,10 @@ export default {
                 this.$refs.editingOutline.style.width = position.w + 'px';
                 this.$refs.editingOutline.style.height = position.h + 'px';
             }
+            */
         },
         positionSelectedElement(newElement) {
+            /*
             if (newElement && this.$refs.selectedOutline) {
                 const position = this.calcElementRootPositionByKey(newElement);
                 const viewRects = this.$el.getBoundingClientRect();
@@ -181,6 +191,7 @@ export default {
                 this.$refs.selectedOutline.style.width = position.w + 'px';
                 this.$refs.selectedOutline.style.height = position.h + 'px';
             }
+            */
         }
     }
 };

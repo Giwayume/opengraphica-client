@@ -4,7 +4,7 @@
             'background-color': backgroundColor,
             'box-shadow': '0px 0px 1000px 2px #555',
             height: height,
-            position: 'relative',
+            position: 'absolute',
             width: width
         }">
         <group :definition="rootDefinition" pid="0" :is-root="true" />
@@ -23,6 +23,10 @@ export default {
         definition: {
             type: Object,
             default: null
+        },
+        previousArtboards: {
+            type: Array,
+            default: () => []
         }
     },
     computed: {

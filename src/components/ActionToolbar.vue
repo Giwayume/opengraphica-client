@@ -48,10 +48,10 @@
                         <i class="fas fa-arrows-alt"></i>
                     </b-button>
                 </b-input-group-prepend>
-                <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Pan X"
-                    class="border-dark bg-dark-medium border-dark-medium text-white text-center" style="max-width: 5rem" value="0"></b-form-input>
-                <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Pan Y"
-                    class="bg-dark-medium text-white border-dark-medium text-center" style="max-width: 5rem" value="0"></b-form-input>
+                <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Pan X" :value="panX" @change="panX = $event"
+                    class="border-dark bg-dark-medium border-dark-medium text-white text-center" style="max-width: 5rem"></b-form-input>
+                <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Pan Y" :value="panY" @change="panY = $event"
+                    class="bg-dark-medium text-white border-dark-medium text-center" style="max-width: 5rem"></b-form-input>
             </b-input-group>
             <b-input-group class="mx-1 my-0 text-nowrap align-content-start">
                 <b-input-group-prepend>
@@ -109,25 +109,47 @@ export default {
         },
         canRedo() {
             return true;
+        },
+        panX: {
+            get() {
+                return parseFloat(store.state.canvas.pan.x);
+            },
+            set(panX) {
+                store.dispatch('setCanvasPan', {
+                    x: parseFloat(panX) || 0,
+                    y: this.panY
+                });
+            }
+        },
+        panY: {
+            get() {
+                return parseFloat(store.state.canvas.pan.y);
+            },
+            set(panY) {
+                store.dispatch('setCanvasPan', {
+                    x: this.panX,
+                    y: parseFloat(panY) || 0
+                });
+            }
         }
     },
     methods: {
         onClickDelete() {
             const selectedElement = store.state.selectedElement;
             if (selectedElement == null) {
-                store.commit('deletePage', store.state.selectedPage);
+                store.dispatch('deletePage', store.state.selectedPage);
             } else {
                 const parentElement = store.state.selectedElement.replace(/\.[0-9]{0,8}$/g, '');
-                store.commit('setEditingElement', parentElement);
-                store.commit('setSelectedElement', parentElement);
-                store.commit('deleteElement', selectedElement);
+                store.dispatch('setEditingElement', parentElement);
+                store.dispatch('setSelectedElement', parentElement);
+                store.dispatch('deleteElement', selectedElement);
             }
         },
         onClickUndo() {
-            store.commit('undoHistory');
+            store.dispatch('undoHistory');
         },
         onClickRedo() {
-            store.commit('redoHistory');
+            store.dispatch('redoHistory');
         }
     }
 };

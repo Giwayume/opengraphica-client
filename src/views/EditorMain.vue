@@ -80,7 +80,4 @@ section {
     border-bottom: 2px solid #151515;
     box-sizing: border-box;
 }
-.Resizer {
-    z-index: 0 !important;
-}
 </style>

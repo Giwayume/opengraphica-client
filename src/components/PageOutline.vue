@@ -1,6 +1,6 @@
 <template>
     <div v-if="selectedPage != null" role="tablist" class="d-block flex-grow-1 w-100">
-        <div v-if="isRoot" class="d-flex bg-dark-medium text-white px-3 py-2 align-items-center">
+        <div v-if="isRoot" class="d-flex bg-dark-medium text-white pl-3 py-2 align-items-center">
             <strong>{{ selectedPage.name }}</strong>
             <b-button
                 variant="dark-medium" size="sm" class="py-0 ml-auto"
@@ -140,13 +140,13 @@ export default {
     },
     methods: {
         addArtboard() {
-            store.commit('addArtboard');
+            store.dispatch('addArtboard');
         },
         onKeyDownSelectionButton() {
         },
         setEditingElement(i) {
-            store.commit('setSelectedElement', (this.pid ? (this.pid + '.') : '') + i);
-            store.commit('setEditingElement', (this.pid ? (this.pid + '.') : '') + i);
+            store.dispatch('setSelectedElement', (this.pid ? (this.pid + '.') : '') + i);
+            store.dispatch('setEditingElement', (this.pid ? (this.pid + '.') : '') + i);
         },
         expandTree(pid) {
             if (pid) {

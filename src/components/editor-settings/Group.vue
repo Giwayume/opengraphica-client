@@ -259,7 +259,7 @@ export default {
             };
         },
         updateSettings() {
-            store.commit('updateElementDefinition', {
+            store.dispatch('updateElementDefinition', {
                 pid: this.pid,
                 definition: {
                     position: this.settings.position,
