@@ -51,6 +51,11 @@ const store = new Vuex.Store({
             {
                 id: 0,
                 name: 'Page 1',
+                artboardDisplay: {
+                    position: 'horizontal',
+                    align: 'top',
+                    spacing: 100
+                },
                 artboardIdCounter: 2,
                 outline: [
                     {
@@ -77,6 +82,13 @@ const store = new Vuex.Store({
             }
         ]
     },
+    getters: {
+        pageDefinition(state) {
+            return (pageId) => {
+                return state.pages.filter(page => page.id === pageId)[0] || null;
+            };
+        }
+    },
     mutations: {
         addArtboard(state) {
             const page = state.pages.filter(page => page.id === state.selectedPage)[0];
@@ -96,6 +108,11 @@ const store = new Vuex.Store({
             state.pages.push({
                 id: state.pageIdCounter++,
                 name: 'Page ' + state.pageIdCounter,
+                artboardDisplay: {
+                    position: 'horizontal',
+                    align: 'top',
+                    spacing: 100
+                },
                 artboardIdCounter: 1,
                 outline: [
                     {
@@ -159,6 +176,9 @@ const store = new Vuex.Store({
         setCanvasPan(state, pan) {
             state.canvas.pan.x = pan.x || 0;
             state.canvas.pan.y = pan.y || 0;
+        },
+        setCanvasZoom(state, zoom) {
+            state.canvas.zoom = zoom;
         },
         setSelectedElements(state, selectedElements) {
             if (selectedElements == null) {
@@ -234,6 +254,9 @@ const store = new Vuex.Store({
         setCanvasPan({ commit }, pan) {
             commit('setCanvasPan', pan);
         },
+        setCanvasZoom({ commit }, zoom) {
+            commit('setCanvasZoom', zoom);
+        },
         setEditingElement({ commit }, editingElement) {
             commit('setEditingElement', editingElement);
         },
@@ -241,7 +264,7 @@ const store = new Vuex.Store({
             commit('setRecordHistory', recordHistory);
         },
         setSelectedElement({ commit }, selectedElement) {
-            commit('setSelectedElements', selectedElement);
+            commit('setSelectedElements', [selectedElement]);
         },
         setSelectedElements({ commit }, selectedElements) {
             commit('setSelectedElements', selectedElements);

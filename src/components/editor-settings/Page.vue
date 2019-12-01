@@ -165,7 +165,8 @@ export default {
             store.dispatch('updatePageDefinition', {
                 id: this.id,
                 definition: {
-                    name: this.settings.name
+                    name: this.settings.name,
+                    artboardDisplay: this.settings.artboardDisplay
                 }
             });
         }

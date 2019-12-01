@@ -55,16 +55,19 @@
             </b-input-group>
             <b-input-group class="mx-1 my-0 text-nowrap align-content-start">
                 <b-input-group-prepend>
-                    <b-button variant="dark-medium" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom Out">
+                    <b-button variant="dark-medium" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom Out" @click="onClickZoomOut">
                         <i class="fas fa-minus">
                             <span class="sr-only">Zoom Out</span>
                         </i>
                     </b-button>
                 </b-input-group-prepend>
                 <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom Level"
-                    class="bg-dark-medium text-white border-dark-medium text-center" style="min-width: 4rem; max-width: 5rem" value="100%"></b-form-input>
+                    class="bg-dark-medium text-white border-dark-medium text-center"
+                    style="min-width: 4rem; max-width: 5rem"
+                    @focus="zoomLevelIsFocused = true" @blur="zoomLevelIsFocused = false"
+                    :value="zoomLevel" @change="zoomLevel = $event"></b-form-input>
                 <b-input-group-append>
-                    <b-button variant="dark-medium" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom In">
+                    <b-button variant="dark-medium" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom In" @click="onClickZoomIn">
                         <i class="fas fa-plus">
                             <span class="sr-only">Zoom In</span>
                         </i>
@@ -131,9 +134,44 @@ export default {
                     y: parseFloat(panY) || 0
                 });
             }
+        },
+        zoomLevel: {
+            get() {
+                if (this.zoomLevelIsFocused) {
+                    return (store.state.canvas.zoom * 100).toFixed(0);
+                } else {
+                    return (store.state.canvas.zoom * 100).toFixed(0) + '%';
+                }
+            },
+            set(zoomLevel) {
+                store.dispatch('setCanvasZoom', parseFloat((parseFloat(zoomLevel) / 100).toFixed(2)));
+            }
         }
     },
+    data() {
+        return {
+            zoomLevelIsFocused: false,
+            zoomLevels: []
+        };
+    },
+    mounted() {
+        this.generateZoomLevels();
+    },
     methods: {
+        generateZoomLevels() {
+            const zoomLevels = [1];
+            let baseZoomLevel = 1;
+            for (let i = 0; i < 10; i++) {
+                baseZoomLevel *= 1.2;
+                zoomLevels.push(baseZoomLevel);
+            }
+            baseZoomLevel = 1;
+            for (let i = 0; i < 10; i++) {
+                baseZoomLevel *= 1/1.2;
+                zoomLevels.unshift(baseZoomLevel);
+            }
+            this.zoomLevels = zoomLevels;
+        },
         onClickDelete() {
             const selectedElement = store.state.selectedElement;
             if (selectedElement == null) {
@@ -150,6 +188,26 @@ export default {
         },
         onClickRedo() {
             store.dispatch('redoHistory');
+        },
+        onClickZoomIn() {
+            const canvasZoom = store.state.canvas.zoom;
+            for (let i = 0; i < this.zoomLevels.length; i++) {
+                const zoomLevel = this.zoomLevels[i];
+                if (canvasZoom < zoomLevel) {
+                    store.dispatch('setCanvasZoom', zoomLevel);
+                    break;
+                }
+            }
+        },
+        onClickZoomOut() {
+            const canvasZoom = store.state.canvas.zoom;
+            for (let i = this.zoomLevels.length - 1; i >= 0; i--) {
+                const zoomLevel = this.zoomLevels[i];
+                if (canvasZoom > zoomLevel) {
+                    store.dispatch('setCanvasZoom', zoomLevel);
+                    break;
+                }
+            }
         }
     }
 };
