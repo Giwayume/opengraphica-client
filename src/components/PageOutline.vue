@@ -1,7 +1,7 @@
 <template>
     <div v-if="selectedPage != null" role="tablist" class="d-block flex-grow-1 w-100">
         <div v-if="isRoot" class="d-flex bg-dark-medium text-white pl-3 py-2 align-items-center">
-            <strong>{{ selectedPage.name }}</strong>
+            <strong class="text-nowrap text-truncate">{{ selectedPage.name }}</strong>
             <b-button
                 variant="dark-medium" size="sm" class="py-0 ml-auto"
                 v-b-tooltip="{ delay: { show: 400 } }" title="New Artboard"

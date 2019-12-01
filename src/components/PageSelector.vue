@@ -1,7 +1,7 @@
 <template>
     <div role="tablist" class="d-block w-100 overflow-hidden">
         <div class="d-flex flex-row bg-dark-medium text-white pl-3 py-2 align-items-center">
-            <strong>Pages</strong>
+            <strong class="text-nowrap text-truncate">Pages</strong>
             <b-button
                 variant="dark-medium" size="sm" class="py-0 ml-auto"
                 v-b-tooltip="{ delay: { show: 400 } }" title="New Page"
@@ -15,7 +15,7 @@
                 href="#"
                 block
                 :variant="selectedPage.id === page.id && !editingElement ? 'primary' : 'dark'"
-                class="text-left rounded-0 px-1 py-1 m-0"
+                class="text-left rounded-0 px-1 py-1 m-0 text-nowrap text-truncate"
                 @click="selectPage(page.id)"
             >
                 <i class="fas text-center fa-caret-down invisible" style="width: 1.2em;"></i>

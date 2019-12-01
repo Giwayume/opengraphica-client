@@ -6,7 +6,6 @@
             left: left,
             position: 'absolute',
             top: top,
-            transform: 'scale(' + zoomLevel + ')',
             width: width
         }">
         <group :definition="rootDefinition" pid="0" :is-root="true" />
@@ -56,7 +55,7 @@ export default {
                     }
                 }
             }
-            return (left * store.state.canvas.zoom) + 'px';
+            return left + 'px';
         },
         rootDefinition() {
             return {
@@ -87,7 +86,7 @@ export default {
                     }
                 }
             }
-            return (top * store.state.canvas.zoom) + 'px';
+            return top + 'px';
         },
         width() {
             return this.definition.dimensions.w + 'px';

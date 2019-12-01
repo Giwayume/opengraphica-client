@@ -2,7 +2,8 @@
     <div class="position-relative w-100 h-100">
         <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center">
             <div v-if="artboards && artboards.length > 0" class="position-relative" :style="{
-                    transform: 'translate(' + panX + 'px, ' + panY + 'px)'
+                    transform: 'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomLevel + ')',
+                    'transform-origin': 'top left'
                 }">
                 <artboard v-for="(artboard, i) in artboards" :key="artboard.id" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
             </div>
@@ -67,10 +68,13 @@ export default {
             return store.state.pages;
         },
         panX() {
-            return store.state.canvas.pan.x;
+            return store.state.canvas.pan.x * store.state.canvas.zoom;
         },
         panY() {
-            return store.state.canvas.pan.y;
+            return store.state.canvas.pan.y * store.state.canvas.zoom;
+        },
+        zoomLevel() {
+            return store.state.canvas.zoom;
         }
     },
     watch: {
