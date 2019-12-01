@@ -97,6 +97,11 @@
                 <b-dropdown-item href="#"><i class="far fa-save mr-2 text-center" style="width: 1.2rem"></i>Save As</b-dropdown-item>
                 <b-dropdown-item href="#"><i class="fas fa-file-export mr-2 text-center" style="width: 1.2rem"></i>Export</b-dropdown-item>
             </b-dropdown>
+            <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Menu">
+                <i class="fas fa-bars">
+                    <span class="sr-only">Menu</span>
+                </i>
+            </b-button>
         </div>
     </div>
 </template>

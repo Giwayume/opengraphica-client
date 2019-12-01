@@ -1,5 +1,5 @@
 <template>
-    <div class="position-relative w-100 h-100">
+    <div class="position-relative w-100 h-100 user-select-none">
         <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center">
             <div v-if="artboards && artboards.length > 0" class="position-relative" :style="{
                     transform: 'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomLevel + ')',

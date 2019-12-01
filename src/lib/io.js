@@ -7,6 +7,7 @@ const listener = window.keypressListener = new keypress.Listener();
 
 let vm = null;
 const io = {
+    modifierComboLock: false,
     events: {
         // Filled by eventKeyMap below
     },
@@ -22,21 +23,23 @@ const eventKeyMap = {
     page_outline_pick_select_modifier: {
         keys: 'ctrl',
         is_solitary: false,
+        is_exclusive: false,
         prevent_default: false
     },
     page_outline_group_select_modifier: {
         keys: 'shift',
         is_solitary: false,
+        is_exclusive: false,
         prevent_default: false
     },
     redo: {
-        keys: ['ctrl shift z', 'ctrl y']
+        keys: ['ctrl shift z', 'shift ctrl z', 'ctrl y']
     },
     save: {
         keys: 'ctrl s'
     },
     save_as: {
-        keys: 'ctrl shift s'
+        keys: ['ctrl shift s', 'shift ctrl s']
     },
     undo: {
         keys: 'ctrl z'
@@ -59,19 +62,33 @@ for (let eventName in eventKeyMap) {
         event.keys = [event.keys];
     }
     for (let keyCombo of event.keys) {
+        const isModifierCombo = /\b(ctrl|shift|alt)\b/.test(keyCombo) && !/^(ctrl|shift|alt)$/.test(keyCombo);
         listener.register_combo({
             keys: keyCombo,
             is_exclusive: event.is_exclusive === true,
-            is_solitary: event.is_solitary !== false,
-            on_keydown: function(event) {
-                io.events[eventName] = true;
-                vm.$root.$emit('io:keydown:' + eventName, event);
+            is_solitary: event.is_solitary === true,
+            is_unordered: event.is_unordered === true,
+            on_keydown: function(nativeEvent) {
+                if (!isModifierCombo || (isModifierCombo && !io.modifierComboLock)) {
+                    if (event.prevent_default) {
+                        nativeEvent.preventDefault();
+                    }
+                    if (isModifierCombo) {
+                        io.modifierComboLock = true;
+                    }
+                    io.events[eventName] = true;
+                    vm.$root.$emit('io:keydown:' + eventName, nativeEvent);
+                }
             },
             on_keyup: function(event) {
+                if (isModifierCombo) {
+                    io.modifierComboLock = false;
+                }
                 io.events[eventName] = false;
                 vm.$root.$emit('io:keyup:' + eventName, event);
             },
-            prevent_default: event.prevent_default !== false
+            prevent_default: false,
+            prevent_repeat: event.prevent_repeat !== false
         });
     }
 }

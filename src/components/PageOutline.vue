@@ -31,7 +31,7 @@
                     :variant="editingChild == i ? 'primary' : selectedChild == i ? 'outline-primary' : 'dark'"
                     class="text-left rounded-0 py-1 pl-1 pr-1 m-0 text-nowrap text-truncate text-light overflow-hidden"
                     @keydown="onKeyDownSelectionButton"
-                    @click="onMouseDownSelectionButton">
+                    @mousedown="onMouseDownSelectionButton($event, i)">
                     <i class="text-center" :class="{
                         'fas fa-chalkboard': item.type == 'artboard',
                         'fas fa-folder-open': item.expanded && item.type == 'group',
@@ -53,6 +53,7 @@
 <script>
 import store from '@/store';
 import uuidv4 from 'uuid';
+import io from '@/lib/io';
 
 export default {
     name: 'PageOutline',
@@ -96,9 +97,9 @@ export default {
                 return null;
             }
         },
-        selectedElement() {
+        selectedElements() {
             if (this.isRoot) {
-                return store.state.selectedElement;
+                return store.state.selectedElements;
             } else {
                 return null;
             }
@@ -125,16 +126,26 @@ export default {
                 }
                 this.expandTree(newElement);
             });
-            this.$watch('selectedElement', (newElement, oldElement) => {
-                const oldLeaf = this.$el.parentNode.querySelector(`[data-pid="${oldElement}"]`);
-                if (oldLeaf) {
-                    oldLeaf.parentNode.__vue__.selectedChild = null;
+            this.$watch('selectedElements', (newElements, oldElements) => {
+                oldElements = JSON.parse(JSON.stringify(oldElements));
+                for (let newElement of newElements) {
+                    const oldElementIndex = oldElements.indexOf(newElement);
+                    if (oldElementIndex > -1) {
+                        oldElements.splice(oldElementIndex, 1);
+                    } else {
+                        const newLeaf = this.$el.parentNode.querySelector(`[data-pid="${newElement}"]`);
+                        if (newLeaf) {
+                            newLeaf.parentNode.__vue__.selectedChild = newElement.split('.').pop();
+                        }
+                        this.expandTree(newElement);
+                    }
                 }
-                const newLeaf = this.$el.parentNode.querySelector(`[data-pid="${newElement}"]`);
-                if (newLeaf) {
-                    newLeaf.parentNode.__vue__.selectedChild = newElement.split('.').pop();
+                for (let oldElement of oldElements) {
+                    const oldLeaf = this.$el.parentNode.querySelector(`[data-pid="${oldElement}"]`);
+                    if (oldLeaf) {
+                        oldLeaf.parentNode.__vue__.selectedChild = null;
+                    }
                 }
-                this.expandTree(newElement);
             });
         }
     },
@@ -144,12 +155,16 @@ export default {
         },
         onKeyDownSelectionButton() {
         },
-        onMouseDownSelectionButton(event) {
-            console.log(event);
-        },
-        setEditingElement(i) {
-            store.dispatch('setSelectedElement', (this.pid ? (this.pid + '.') : '') + i);
-            store.dispatch('setEditingElement', (this.pid ? (this.pid + '.') : '') + i);
+        onMouseDownSelectionButton(event, i) {
+            const pid = (this.pid ? (this.pid + '.') : '') + i;
+            if (io.events.page_outline_pick_select_modifier) {
+                store.dispatch('addSelectedElement', pid);
+            } else if (io.events.page_outline_group_select_modifier) {
+                store.dispatch('addSelectedElement', pid);
+            } else {
+                store.dispatch('setSelectedElement', pid);
+                store.dispatch('setEditingElement', pid);
+            }
         },
         expandTree(pid) {
             if (pid) {

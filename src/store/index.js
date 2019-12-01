@@ -128,6 +128,13 @@ const store = new Vuex.Store({
             });
             saveHistorySnapshot(state);
         },
+        addSelectedElement(state, selectedElement) {
+            if (typeof selectedElement === 'string') {
+                if (!state.selectedElements.includes(selectedElement)) {
+                    state.selectedElements.push(selectedElement);
+                }
+            }
+        },
         deleteElement(state, pid) {
             if (pid.includes('.')) {
                 const pidSplit = pid.split('.');
@@ -238,6 +245,9 @@ const store = new Vuex.Store({
         },
         addPage({ commit }) {
             commit('addPage');
+        },
+        addSelectedElement({ commit }, selectedElement) {
+            commit('addSelectedElement', selectedElement);
         },
         deleteElement({ commit }, pid) {
             commit('deleteElement', pid);
