@@ -45,7 +45,10 @@ export default {
     },
     computed: {
         selectedElement() {
-            return store.state.selectedElement;
+            return store.state.selectedElements[0] || null;
+        },
+        selectedElementCount() {
+            return store.state.selectedElements.length;
         },
         selectedPage() {
             return store.state.selectedPage;
@@ -54,19 +57,27 @@ export default {
     watch: {
         selectedElement: {
             immediate: true,
-            async handler() {
-                const selectedElementDefinition = await store.dispatch('getElementDefinition', this.selectedElement);
-                this.$nextTick(() => {
-                    this.selectedElementDefinition = selectedElementDefinition;
-                });
+            async handler(selectedElement) {
+                if (selectedElement != null) {
+                    const selectedElementDefinition = await store.dispatch('getElementDefinition', selectedElement);
+                    this.$nextTick(() => {
+                        this.selectedElementDefinition = selectedElementDefinition;
+                    });
+                } else {
+                    this.selectedElementDefinition = null;
+                }
             }
         },
         selectedPage: {
             immediate: true,
-            async handler() {
-                this.$nextTick(() => {
-                    this.selectedPageDefinition = store.state.pages.filter((page) => { return page.id === this.selectedPage; })[0];
-                });
+            async handler(selectedPage) {
+                if (selectedPage != null) {
+                    this.$nextTick(() => {
+                        this.selectedPageDefinition = store.state.pages.filter((page) => { return page.id === selectedPage; })[0];
+                    });
+                } else {
+                    this.selectedPageDefinition = null;
+                }
             }
         }
     }

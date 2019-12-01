@@ -8,6 +8,7 @@
             top: top,
             width: width
         }">
+        <div class="text-light" style="position: absolute; top: -25px">{{ definition.name }}</div>
         <group :definition="rootDefinition" pid="0" :is-root="true" />
     </div>
 </template>
@@ -47,7 +48,6 @@ export default {
                         left += artboard.dimensions.w + artboardDisplay.spacing;
                     }
                 } else if (artboardDisplay.position === 'vertical') {
-                    console.log(artboardDisplay.align);
                     if (artboardDisplay.align === 'center') {
                         left = -(parseInt(this.width, 10) / 2);
                     } else if (artboardDisplay.align === 'right') {
