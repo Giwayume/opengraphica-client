@@ -31,7 +31,7 @@
                     :variant="editingChild == i ? 'primary' : selectedChild == i ? 'outline-primary' : 'dark'"
                     class="text-left rounded-0 py-1 pl-1 pr-1 m-0 text-nowrap text-truncate text-light overflow-hidden"
                     @keydown="onKeyDownSelectionButton"
-                    @click="setEditingElement(i)">
+                    @click="onMouseDownSelectionButton">
                     <i class="text-center" :class="{
                         'fas fa-chalkboard': item.type == 'artboard',
                         'fas fa-folder-open': item.expanded && item.type == 'group',
@@ -143,6 +143,9 @@ export default {
             store.dispatch('addArtboard');
         },
         onKeyDownSelectionButton() {
+        },
+        onMouseDownSelectionButton(event) {
+            console.log(event);
         },
         setEditingElement(i) {
             store.dispatch('setSelectedElement', (this.pid ? (this.pid + '.') : '') + i);

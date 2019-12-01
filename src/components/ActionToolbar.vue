@@ -156,6 +156,33 @@ export default {
     },
     mounted() {
         this.generateZoomLevels();
+        this.$root.$on('io:keydown:delete', () => {
+            this.onClickDelete();
+        });
+        this.$root.$on('io:keydown:redo', () => {
+            this.onClickRedo();
+        });
+        this.$root.$on('io:keydown:undo', () => {
+            this.onClickUndo();
+        });
+        this.$root.$on('io:keydown:zoom_default', () => {
+            this.onClickZoomDefault();
+        });
+        this.$root.$on('io:keydown:zoom_in', () => {
+            this.onClickZoomIn();
+        });
+        this.$root.$on('io:keydown:zoom_out', () => {
+            this.onClickZoomOut();
+        });
+    },
+    destroyed() {
+        this.$root.$off([
+            'io:keydown:delete',
+            'io:keydown:redo',
+            'io:keydown:undo',
+            'io:keydown:zoom_in',
+            'io:keydown:zoom_out'
+        ]);
     },
     methods: {
         generateZoomLevels() {
@@ -188,6 +215,9 @@ export default {
         },
         onClickRedo() {
             store.dispatch('redoHistory');
+        },
+        onClickZoomDefault() {
+            store.dispatch('setCanvasZoom', 1);
         },
         onClickZoomIn() {
             const canvasZoom = store.state.canvas.zoom;
