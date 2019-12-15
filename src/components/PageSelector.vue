@@ -16,7 +16,7 @@
                 block
                 :variant="selectedPage.id === page.id && !editingElement ? 'primary' : 'dark'"
                 class="text-left rounded-0 px-1 py-1 m-0 text-nowrap text-truncate"
-                @click="selectPage(page.id)"
+                @mousedown="selectPage(page.id)"
             >
                 <i class="fas text-center fa-caret-down invisible" style="width: 1.2em;"></i>
                 <i class="fas text-center mr-1" :class="{
@@ -41,7 +41,7 @@ export default {
             return store.state.editingElement;
         },
         selectedPage() {
-            return store.state.pages.filter(page => page.id == store.state.selectedPage)[0];
+            return store.state.pages.filter(page => page.id == store.state.selectedPage)[0] || {};
         }
     },
     methods: {
@@ -55,9 +55,9 @@ export default {
             lastButton && lastButton.scrollIntoView();
         },
         selectPage(pageId) {
+            store.dispatch('setSelectedPage', pageId);
             store.dispatch('setEditingElement', null);
             store.dispatch('setSelectedElement', null);
-            store.dispatch('setSelectedPage', pageId);
         }
     }
 }

@@ -1,6 +1,6 @@
 <template>
     <section aria-label="OpenGraphica Editor" class="d-flex flex-column">
-        <div class="flex-grow-0 flex-shrink-1 app-header text-white px-3 py-2 d-flex flex-row justify-content-between">
+        <div class="flex-grow-0 flex-shrink-1 app-header text-white d-flex flex-row justify-content-between">
             <action-toolbar />
         </div>
         <div class="position-relative flex-grow-1">

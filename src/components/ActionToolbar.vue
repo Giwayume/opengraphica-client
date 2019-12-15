@@ -1,7 +1,8 @@
 <template>
-    <div class="d-flex flex-row w-100 justify-content-between align-content-start flex-wrap">
-        <div>
+    <div class="d-flex flex-row px-3 py-2 w-100 justify-content-between align-content-start overflow-auto">
+        <div class="text-nowrap">
             <b-dropdown
+                boundary="viewport"
                 split
                 split-variant="dark-medium"
                 variant="dark"
@@ -20,21 +21,21 @@
                 <b-dropdown-item href="#"><i class="far fa-image mr-2 text-center" style="width: 1.2rem"></i>Image</b-dropdown-item>
                 <b-dropdown-item href="#"><i class="fas fa-vector-square mr-2 text-center" style="width: 1.2rem"></i>Vector Graphic</b-dropdown-item>
             </b-dropdown>
-            <b-button v-b-tooltip.hover="{ delay: { show: 400 } }" title="Delete"
+            <b-button v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Delete"
                 variant="dark-medium" class="mx-1" style="min-width: 3.5rem" @click="onClickDelete">
                 <i class="fas fa-trash">
                     <span class="sr-only">Delete</span>
                 </i>
             </b-button>
         </div>
-        <div>
-            <b-button v-b-tooltip.hover="{ delay: { show: 400 } }" title="Undo"
+        <div class="text-nowrap">
+            <b-button v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Undo"
                 variant="dark-medium" class="mx-1" style="min-width: 3.5rem" :disabled="!canUndo" @click="onClickUndo">
                 <i class="fas fa-undo">
                     <span class="sr-only">Undo</span>
                 </i>
             </b-button>
-            <b-button v-b-tooltip.hover="{ delay: { show: 400 } }" title="Redo"
+            <b-button v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Redo"
                 variant="dark-medium" class="mx-1" style="min-width: 3.5rem" :disabled="!canRedo" @click="onClickRedo">
                 <i class="fas fa-redo">
                     <span class="sr-only">Redo</span>
@@ -42,32 +43,32 @@
             </b-button>
         </div>
         <div class="d-flex flex-row">
-            <b-input-group class="mx-1 my-0 text-nowrap align-content-start">
-                <b-input-group-prepend v-b-tooltip.hover="{ delay: { show: 400 } }" title="Pan">
+            <b-input-group class="mx-1 my-0 flex-nowrap align-content-start">
+                <b-input-group-prepend v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Pan">
                     <b-button variant="dark-medium">
                         <i class="fas fa-arrows-alt"></i>
                     </b-button>
                 </b-input-group-prepend>
-                <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Pan X" :value="panX" @change="panX = $event"
+                <b-form-input v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Pan X" :value="panX" @change="panX = $event"
                     class="border-dark bg-dark-medium border-dark-medium text-white text-center" style="max-width: 5rem"></b-form-input>
-                <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Pan Y" :value="panY" @change="panY = $event"
+                <b-form-input v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Pan Y" :value="panY" @change="panY = $event"
                     class="bg-dark-medium text-white border-dark-medium text-center" style="max-width: 5rem"></b-form-input>
             </b-input-group>
-            <b-input-group class="mx-1 my-0 text-nowrap align-content-start">
+            <b-input-group class="mx-1 my-0 flex-nowrap align-content-start">
                 <b-input-group-prepend>
-                    <b-button variant="dark-medium" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom Out" @click="onClickZoomOut">
+                    <b-button variant="dark-medium" v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Zoom Out" @click="onClickZoomOut">
                         <i class="fas fa-minus">
                             <span class="sr-only">Zoom Out</span>
                         </i>
                     </b-button>
                 </b-input-group-prepend>
-                <b-form-input v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom Level"
+                <b-form-input v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Zoom Level"
                     class="bg-dark-medium text-white border-dark-medium text-center"
-                    style="min-width: 4rem; max-width: 5rem"
+                    style="min-width: 4.5rem; max-width: 5rem"
                     @focus="zoomLevelIsFocused = true" @blur="zoomLevelIsFocused = false"
                     :value="zoomLevel" @change="zoomLevel = $event"></b-form-input>
                 <b-input-group-append>
-                    <b-button variant="dark-medium" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Zoom In" @click="onClickZoomIn">
+                    <b-button variant="dark-medium" v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Zoom In" @click="onClickZoomIn">
                         <i class="fas fa-plus">
                             <span class="sr-only">Zoom In</span>
                         </i>
@@ -75,13 +76,14 @@
                 </b-input-group-append>
             </b-input-group>
         </div>
-        <div>
-            <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Open">
+        <div class="text-nowrap">
+            <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Open">
                 <i class="fas fa-folder-open">
                     <span class="sr-only">Open</span>
                 </i>
             </b-button>
             <b-dropdown
+                boundary="viewport"
                 split
                 split-variant="dark-medium"
                 variant="dark"
@@ -97,8 +99,8 @@
                 <b-dropdown-item href="#"><i class="far fa-save mr-2 text-center" style="width: 1.2rem"></i>Save As</b-dropdown-item>
                 <b-dropdown-item href="#"><i class="fas fa-file-export mr-2 text-center" style="width: 1.2rem"></i>Export</b-dropdown-item>
             </b-dropdown>
-            <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ delay: { show: 400 } }" title="Menu">
-                <i class="fas fa-bars">
+            <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Menu">
+                <i class="fas fa-cog">
                     <span class="sr-only">Menu</span>
                 </i>
             </b-button>
@@ -205,14 +207,14 @@ export default {
             this.zoomLevels = zoomLevels;
         },
         onClickDelete() {
-            const selectedElement = store.state.selectedElement;
+            const selectedElement = store.getters.selectedElement;
             if (selectedElement == null) {
                 store.dispatch('deletePage', store.state.selectedPage);
             } else {
-                const parentElement = store.state.selectedElement.replace(/\.[0-9]{0,8}$/g, '');
-                store.dispatch('setEditingElement', parentElement);
-                store.dispatch('setSelectedElement', parentElement);
-                store.dispatch('deleteElement', selectedElement);
+                const parentElement = selectedElement.replace(/\.[0-9]{0,8}$/g, '');
+                store.dispatch('deleteElements', store.state.selectedElements);
+                store.dispatch('setEditingElement', null);
+                store.dispatch('setSelectedElement', null);
             }
         },
         onClickUndo() {

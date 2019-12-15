@@ -5,18 +5,27 @@ import VuexHistory from 'vuex-history';
 Vue.use(Vuex);
 Vue.use(VuexHistory);
 
-const getElementDefinition = function(state, pageId, artboardId, elementKey) {
+let vm;
+
+const registerVm = function(_vm) {
+    vm = _vm;
+};
+
+const getElementDefinition = function(state, pageId, elementKey) {
     if (!elementKey) return null;
-    const page = state.pages.filter((page) => page.id == pageId)[0];
-    const artboard = page.outline.filter((artboard) => artboard.id == artboardId)[0];
-    let currentElement = artboard;
     const accessors = elementKey.split('.');
-    for (let i = 1; i < accessors.length; i++) {
-        const index = parseInt(accessors[i], 10);
-        if (currentElement.items) {
-            currentElement = currentElement.items[index];
-        } else {
-            currentElement = null;
+    const page = state.pages.filter((page) => page.id == pageId)[0];
+    let currentElement
+    if (page) {
+        const artboard = page.outline[accessors[0]];
+        currentElement = artboard;
+        for (let i = 1; i < accessors.length; i++) {
+            const index = parseInt(accessors[i], 10);
+            if (currentElement.items) {
+                currentElement = currentElement.items[index];
+            } else {
+                currentElement = null;
+            }
         }
     }
     return currentElement || null;
@@ -42,13 +51,13 @@ const store = new Vuex.Store({
             },
             zoom: 1
         },
-        selectedPage: 0,
-        selectedArtboard: 0,
+        selectedPage: 0, // ID, not index
+        selectedArtboard: 0, // ID, not index
         selectedElements: [],
         editingElement: null,
         pageIdCounter: 1,
         pages: [
-            {
+            /*{
                 id: 0,
                 name: 'Page 1',
                 artboardDisplay: {
@@ -65,7 +74,7 @@ const store = new Vuex.Store({
                         expanded: true,
                         dimensions: {
                             w: 600,
-                            h: 800
+                            h: 1200
                         }
                     },
                     {
@@ -75,18 +84,26 @@ const store = new Vuex.Store({
                         expanded: true,
                         dimensions: {
                             w: 400,
-                            h: 800
+                            h: 1200
                         }
                     }
                 ]
-            }
+            }*/
         ]
     },
     getters: {
+        elementDefinition(state) {
+            return (pid) => {
+                return getElementDefinition(state, state.selectedPage, pid);
+            };
+        },
         pageDefinition(state) {
             return (pageId) => {
                 return state.pages.filter(page => page.id === pageId)[0] || null;
             };
+        },
+        selectedElement(state) {
+            return state.selectedElements[0] || null;
         }
     },
     mutations: {
@@ -126,20 +143,22 @@ const store = new Vuex.Store({
                     }
                 ]
             });
+            state.selectedPage = state.pageIdCounter - 1;
             saveHistorySnapshot(state);
         },
         addSelectedElement(state, selectedElement) {
             if (typeof selectedElement === 'string') {
                 if (!state.selectedElements.includes(selectedElement)) {
                     state.selectedElements.push(selectedElement);
+                    vm.$root.$emit('store::mutation::addSelectedElement', selectedElement);
                 }
             }
         },
         deleteElement(state, pid) {
-            if (pid.includes('.')) {
+            if (pid && pid.includes('.')) {
                 const pidSplit = pid.split('.');
-                let parentElement = getElementDefinition(state, state.selectedPage, state.selectedArtboard, pidSplit.slice(0, -1).join('.'));
-                if (parentElement.items) {
+                let parentElement = getElementDefinition(state, state.selectedPage, pidSplit.slice(0, -1).join('.'));
+                if (parentElement && parentElement.items) {
                     parentElement.items.splice(parseInt(pidSplit.slice(-1), 10), 1);
                 }
             } else {
@@ -160,25 +179,29 @@ const store = new Vuex.Store({
                 state.selectedPage = state.pages[0].id;
             }
         },
+        removeSelectedElement(state, selectedElement) {
+            if (typeof selectedElement === 'string') {
+                for (let i = 0 ; i < state.selectedElements.length; i++) {
+                    if (state.selectedElements[i] === selectedElement) {
+                        state.selectedElements.splice(i, 1);
+                        vm.$root.$emit('store::mutation::removeSelectedElement', selectedElement);
+                        break;
+                    }
+                }
+            }
+        },
         setRecordHistory(state, recordHistory) {
             state.recordHistory = recordHistory;
         },
         setEditingElement(state, editingElement) {
-            state.selectedArtboard = parseInt((editingElement || '').split('.')[0], 10) || 0;
+            if (editingElement) {
+                const selectedArtboardIndex = parseInt((editingElement || '').split('.')[0], 10) || 0;
+                state.selectedArtboard = state.pages.filter((page) => page.id === state.selectedPage)[0].outline[selectedArtboardIndex];
+            } else {
+                state.selectedArtboard = null;
+            }
             state.editingElement = editingElement;
-            if (state.selectedElements == null) {
-                state.selectedElements = [];
-            }
-            for (let i = state.selectedElements.length - 1; i >= 0; i--) {
-                const selectedElementArtboard = parseInt((state.selectedElements[i] || '').split('.')[0], 10) || 0;
-                if (selectedElementArtboard !== state.selectedArtboard) {
-                    state.selectedElements.splice(i, 1);
-                }
-            }
-            const selectedElementArtboard = parseInt((state.selectedElement || '').split('.')[0], 10) || 0;
-            if (selectedElementArtboard !== state.selectedArtboard) {
-                state.selectedElement = editingElement;
-            }
+            vm.$root.$emit('store::mutation::setEditingElement', editingElement);
         },
         setCanvasPan(state, pan) {
             state.canvas.pan.x = pan.x || 0;
@@ -187,31 +210,29 @@ const store = new Vuex.Store({
         setCanvasZoom(state, zoom) {
             state.canvas.zoom = zoom;
         },
+        setSelectedArtboard(state, selectedArtboard) {
+            state.selectedArtboard = selectedArtboard;
+        },
         setSelectedElements(state, selectedElements) {
-            if (selectedElements == null) {
-                selectedElements = [];
-            }
-            for (let i = selectedElements.length - 1; i >= 0; i--) {
-                if (selectedElements[i] == null) {
-                    selectedElements.splice(i, 1);
+            if (selectedElements.toString() !== state.selectedElements.toString()) {
+                if (selectedElements == null) {
+                    selectedElements = [];
                 }
-            }
-            state.selectedElements = selectedElements;
-            if (selectedElements.length > 0) {
-                state.selectedArtboard = parseInt((selectedElements[0] || '').split('.')[0], 10) || 0;
-                const editingElementArtboard = parseInt((state.editingElement || '').split('.')[0], 10) || 0;
-                if (editingElementArtboard !== state.selectedArtboard) {
-                    state.editingElement = null;
+                for (let i = selectedElements.length - 1; i >= 0; i--) {
+                    if (selectedElements[i] == null) {
+                        selectedElements.splice(i, 1);
+                    }
                 }
-            } else {
-                state.selectedArtboard = null;
+                const oldSelectedElements = state.selectedElements;
+                state.selectedElements = selectedElements;
+                vm.$root.$emit('store::mutation::setSelectedElements', selectedElements, oldSelectedElements);
             }
         },
         setSelectedPage(state, selectedPage) {
             state.selectedPage = selectedPage;
         },
         updateElementDefinition(state, { pid, definition }) {
-            let elementDefinition = getElementDefinition(state, state.selectedPage, state.selectedArtboard, pid);
+            let elementDefinition = getElementDefinition(state, state.selectedPage, pid);
             for (let prop in definition) {
                 elementDefinition[prop] = JSON.parse(JSON.stringify(definition[prop]));
             }
@@ -242,6 +263,7 @@ const store = new Vuex.Store({
     actions: {
         addArtboard({ commit }) {
             commit('addArtboard');
+            commit('setSelectedElement', '0');
         },
         addPage({ commit }) {
             commit('addPage');
@@ -252,14 +274,21 @@ const store = new Vuex.Store({
         deleteElement({ commit }, pid) {
             commit('deleteElement', pid);
         },
+        deleteElements({ commit }, pids) {
+            if (pids && pids.length) {
+                for (let i = 0; i < pids.length; i++) {
+                    commit('deleteElement', pids[i]);
+                }
+            }
+        },
         deletePage({ commit }, pageId) {
             commit('deletePage', pageId);
         },
-        getElementDefinition(context, pid) {
-            return new Promise((resolve) => {
-                const currentElement = getElementDefinition(context.state, context.state.selectedPage, context.state.selectedArtboard, pid);
-                resolve(currentElement)
-            });
+        removeSelectedElement({ commit, state }, selectedElement) {
+            commit('removeSelectedElement', selectedElement);
+            if (selectedElement === state.editingElement) {
+                commit('setEditingElement', null);
+            }
         },
         setCanvasPan({ commit }, pan) {
             commit('setCanvasPan', pan);
@@ -267,17 +296,52 @@ const store = new Vuex.Store({
         setCanvasZoom({ commit }, zoom) {
             commit('setCanvasZoom', zoom);
         },
-        setEditingElement({ commit }, editingElement) {
+        setEditingElement({ commit, state }, editingElement) {
             commit('setEditingElement', editingElement);
+            let selectedElements = state.selectedElements.slice();
+            if (selectedElements == null) {
+                selectedElements = [];
+            }
+            let hasEncounteredEditingElement = false;
+            for (let i = selectedElements.length - 1; i >= 0; i--) {
+                const selectedElementArtboard = parseInt((selectedElements[i] || '').split('.')[0], 10) || 0;
+                if (selectedElementArtboard !== state.selectedArtboard) {
+                    selectedElements.splice(i, 1);
+                }
+                if (selectedElements[i] === editingElement) {
+                    hasEncounteredEditingElement = true;
+                }
+            }
+            if (editingElement && !hasEncounteredEditingElement) {
+                selectedElements.push(editingElement);
+            }
+            commit('setSelectedElements', selectedElements);
         },
         setRecordHistory({ commit }, recordHistory) {
             commit('setRecordHistory', recordHistory);
         },
-        setSelectedElement({ commit }, selectedElement) {
-            commit('setSelectedElements', [selectedElement]);
+        setSelectedArtboard({ commit }, selectedArtboard) {
+            commit('setSelectedArtboard', selectedArtboard);
         },
-        setSelectedElements({ commit }, selectedElements) {
+        setSelectedElement({ dispatch }, selectedElement) {
+            if (selectedElement != null) {
+                dispatch('setSelectedElements', [selectedElement]);
+            } else {
+                dispatch('setSelectedElements', []);
+            }
+        },
+        setSelectedElements({ dispatch, commit, state }, selectedElements) {
             commit('setSelectedElements', selectedElements);
+            if (selectedElements.length > 0) {
+                const artboardIndex = parseInt((selectedElements[0] || '').split('.')[0], 10) || 0;
+                dispatch('setSelectedArtboard', state.pages.filter((page) => page.id === state.selectedPage)[0].outline[artboardIndex].id);
+                const editingElementArtboardIndex = parseInt((state.editingElement || '').split('.')[0], 10) || 0;
+                if (editingElementArtboardIndex !== artboardIndex) {
+                    dispatch('setEditingElement', null);
+                }
+            } else {
+                dispatch('setSelectedArtboard', null);
+            }
         },
         setSelectedPage({ commit }, selectedPage) {
             commit('setSelectedPage', selectedPage);
@@ -303,5 +367,7 @@ const watchStateNames = [ 'selectedPage', 'selectedArtboard', 'selectedElements'
 const maxHistoryLength = 50;
 const vuexHistory = new VuexHistory( store, watchStateNames, maxHistoryLength );
 vuexHistory.saveSnapshot();
+
+store.registerVm = registerVm;
 
 export default store;

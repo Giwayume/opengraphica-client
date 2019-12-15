@@ -7,9 +7,15 @@
                 }">
                 <artboard v-for="(artboard, i) in artboards" :key="artboard.id" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
             </div>
-            <p v-else>
-                <template v-if="pages.length > 0">Add an artboard to continue.</template>
-                <template v-else>Add a page to continue.</template>
+            <p v-else class="text-center">
+                <template v-if="pages.length > 0">
+                    This page has no artboards.<br>
+                    <b-btn variant="darker" class="mt-3" @click="onClickAddArtboard()"><i class="fas fa-plus mr-2"></i>Add an Artboard</b-btn>
+                </template>
+                <template v-else>
+                    There's nothing here.<br>
+                    <b-btn variant="darker" class="mt-3" @click="onClickAddPage()"><i class="fas fa-plus mr-2"></i>Add a Page</b-btn>
+                </template>
             </p>
         </div>
         <!-- Control display container -->
@@ -57,15 +63,18 @@ export default {
         selectedElement() {
             return store.state.selectedElement;
         },
+        selectedPage() {
+            return store.state.selectedPage;
+        },
         outline() {
             const selectedPage = store.state.selectedPage;
             if (selectedPage != null && this.pages.length > 0) {
-                return this.pages.filter(page => page.id == selectedPage)[0].outline;
+                return (this.pages.filter(page => page.id == selectedPage)[0] || {}).outline || [];
             }
             return [];
         },
         pages() {
-            return store.state.pages;
+            return store.state.pages || [];
         },
         panX() {
             return store.state.canvas.pan.x * store.state.canvas.zoom;
@@ -83,9 +92,16 @@ export default {
         },
         selectedElement(newElement) {
             this.positionSelectedElement(newElement);
+        },
+        selectedPage() {
+            this.scrollIntoView('0');
         }
     },
     mounted() {
+        this.scrollIntoView('0');
+        this.$root.$on('artboardViewer::scrollIntoView', (pid) => {
+            this.scrollIntoView(pid);
+        });
         this.$root.$on('resize', () => {
             this.positionEditingElement(this.editingElement);
             this.positionSelectedElement(this.selectedElement);
@@ -151,6 +167,12 @@ export default {
             while (i<L && a1.charAt(i)=== a2.charAt(i)) i++;
             return a1.substring(0, i);
         },
+        onClickAddArtboard() {
+            this.$store.dispatch('addArtboard');
+        },
+        onClickAddPage() {
+            this.$store.dispatch('addPage');
+        },
         onKeyDownClickTrap() {
             
         },
@@ -196,6 +218,66 @@ export default {
                 this.$refs.selectedOutline.style.height = position.h + 'px';
             }
             */
+        },
+        scrollIntoView(pid) {
+            const elementDefinition = this.$store.getters.elementDefinition(pid);
+            if (elementDefinition) {
+                const viewerWidth = this.$el.clientWidth;
+                const viewerHeight = this.$el.clientHeight;
+                // Artboard
+                if (elementDefinition.dimensions) {
+                    const maxZoomClip = .9;
+                    if (elementDefinition.dimensions.w - viewerWidth > elementDefinition.dimensions.h > viewerHeight) {
+                        if (elementDefinition.dimensions.w > viewerWidth * maxZoomClip) {
+                            this.$store.dispatch('setCanvasZoom', viewerWidth * maxZoomClip / elementDefinition.dimensions.w);
+                        } else {
+                            this.$store.dispatch('setCanvasZoom', 1);
+                        }
+                    } else {
+                        if (elementDefinition.dimensions.h > viewerHeight * maxZoomClip) {
+                            this.$store.dispatch('setCanvasZoom', viewerHeight * maxZoomClip / elementDefinition.dimensions.h);
+                        } else {
+                            this.$store.dispatch('setCanvasZoom', 1);
+                        }
+                    }
+                    const pageDefinition = this.$store.getters.pageDefinition(this.$store.state.selectedPage);
+                    const artboardDisplay = pageDefinition.artboardDisplay;
+                    const artboards = pageDefinition.outline;
+                    let primaryDimensionOffset = 0;
+                    let secondaryDimensionOffset = 0;
+                    for (let i = 0; i < artboards.length; i++) {
+                        const artboard = artboards[i];
+                        let largestSecondaryDimension = 0;
+                        if (artboard !== elementDefinition) {
+                            if (artboard.displayLayoutBreak) {
+                                primaryDimensionOffset = 0;
+                                secondaryDimensionOffset += largestSecondaryDimension + artboardDisplay.spacing;
+                                largestSecondaryDimension = 0;
+                            } else {
+                                primaryDimensionOffset += (artboardDisplay.position === 'horizontal' ? artboard.dimensions.w : artboard.dimensions.h) + artboardDisplay.spacing;
+                            }
+                        } else {
+                            let xOffset = -(artboardDisplay.position === 'horizontal' ? primaryDimensionOffset : secondaryDimensionOffset);
+                            let yOffset = -(artboardDisplay.position === 'horizontal' ? secondaryDimensionOffset : primaryDimensionOffset);
+                            if (['top', 'bottom', 'left'].includes(artboardDisplay.align) || (artboardDisplay.position === 'horizontal' && artboardDisplay.align === 'center')) {
+                                xOffset -= elementDefinition.dimensions.w / 2;
+                            } else if (artboardDisplay.align === 'right') {
+                                xOffset += -elementDefinition.dimensions.w / 2;
+                            }
+                            if (['top', 'bottom', 'left', 'right'].includes(artboardDisplay.align) || (artboardDisplay.position === 'vertical' && artboardDisplay.align === 'center')) {
+                                yOffset -= elementDefinition.dimensions.h / 2;
+                            } else if (artboardDisplay.align === 'bottom') {
+                                yOffset += elementDefinition.dimensions.h / 2;
+                            }
+                            this.$store.dispatch('setCanvasPan', {
+                                x: xOffset,
+                                y: yOffset
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 };

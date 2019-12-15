@@ -93,4 +93,13 @@ for (let eventName in eventKeyMap) {
     }
 }
 
+window.addEventListener('blur', () => {
+    for (let eventName in io.events) {
+        if (io.events[eventName]) {
+            io.events[eventName] = false;
+            vm.$root.$emit('io:keyup:' + eventName, new KeyboardEvent('foo'));
+        }
+    }
+});
+
 export default io;

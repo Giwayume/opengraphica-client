@@ -1,6 +1,9 @@
 <template>
     <div class="w-100 h-100 text-white" style="overflow-y: auto">
-        <template v-if="selectedElementDefinition">
+        <template v-if="selectedElementCount > 1">
+            <editor-multiselect />
+        </template>
+        <template v-else-if="selectedElementDefinition">
             <component :is="'editor-' + selectedElementDefinition.type" :pid="selectedElement" :definition="selectedElementDefinition" />
         </template>
         <template v-else-if="selectedPageDefinition">
@@ -18,6 +21,7 @@ import EditorArtboard from './editor-settings/Artboard.vue';
 import EditorGroup from './editor-settings/Group.vue';
 import EditorImage from './editor-settings/Image.vue';
 import EditorLine from './editor-settings/Line.vue';
+import EditorMultiselect from './editor-settings/Multiselect.vue';
 import EditorOval from './editor-settings/Oval.vue';
 import EditorPage from './editor-settings/Page.vue';
 import EditorRectangle from './editor-settings/Rectangle.vue';
@@ -31,6 +35,7 @@ export default {
         'editor-group': EditorGroup,
         'editor-image': EditorImage,
         'editor-line': EditorLine,
+        'editor-multiselect': EditorMultiselect,
         'editor-oval': EditorOval,
         'editor-page': EditorPage,
         'editor-rectangle': EditorRectangle,
@@ -45,7 +50,7 @@ export default {
     },
     computed: {
         selectedElement() {
-            return store.state.selectedElements[0] || null;
+            return store.getters.selectedElement;
         },
         selectedElementCount() {
             return store.state.selectedElements.length;
@@ -59,7 +64,7 @@ export default {
             immediate: true,
             async handler(selectedElement) {
                 if (selectedElement != null) {
-                    const selectedElementDefinition = await store.dispatch('getElementDefinition', selectedElement);
+                    const selectedElementDefinition = store.getters.elementDefinition(selectedElement);
                     this.$nextTick(() => {
                         this.selectedElementDefinition = selectedElementDefinition;
                     });

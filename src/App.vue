@@ -12,6 +12,7 @@ import io from '@/lib/io';
 
 export default {
     created() {
+        store.registerVm(this);
         io.registerVm(this);
         window.addEventListener('resize', (e) => {
             this.$root.$emit('resize', e);

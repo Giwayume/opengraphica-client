@@ -28,7 +28,7 @@
                     </i>
                 </b-button>
                 <b-button block href="#"
-                    :variant="editingChild == i ? 'primary' : selectedChild == i ? 'outline-primary' : 'dark'"
+                    :variant="editingChild == i ? 'primary' : selectedChildren.includes(i) ? 'outline-primary' : 'dark'"
                     class="text-left rounded-0 py-1 pl-1 pr-1 m-0 text-nowrap text-truncate text-light overflow-hidden"
                     @keydown="onKeyDownSelectionButton"
                     @mousedown="onMouseDownSelectionButton($event, i)">
@@ -44,7 +44,7 @@
                 </b-button>
             </b-card-header>
             <b-collapse v-if="item.items && item.items.length > 0" :id="'page-outline-' + uuid + '_' + i" v-model="item.expanded" role="tabpanel">
-                <page-outline :items="item.items" :level="level + 1" :pid="(pid ? (pid+'.') : '' ) + i" />
+                <page-outline v-if="item.expanded" :items="item.items" :level="level + 1" :pid="(pid ? (pid+'.') : '' ) + i" />
             </b-collapse>
         </b-card>
     </div>
@@ -77,7 +77,7 @@ export default {
     },
     data() {
         return {
-            selectedChild: null,
+            selectedChildren: [],
             editingChild: null,
             uuid: uuidv4()
         };
@@ -113,6 +113,15 @@ export default {
         }
     },
     mounted() {
+        // Prefill "selectedChildren" list to keep track of selection when shown.
+        for (let i = 0; i < this.selectedElements.length; i++) {
+            if (this.selectedElements[i].startsWith(this.pid)) {
+                const index = this.selectedElements[i].replace(this.pid + '.');
+                if (!index.includes('.')) {
+                    this.selectedChildren.push(parseInt(index, 10));
+                }
+            }
+        }
         if (this.isRoot) {
             this.$on(this.$el, 'keydown', this.onKeyDownSelectionButton);
             this.$watch('editingElement', (newElement, oldElement) => {
@@ -126,44 +135,82 @@ export default {
                 }
                 this.expandTree(newElement);
             });
-            this.$watch('selectedElements', (newElements, oldElements) => {
-                oldElements = JSON.parse(JSON.stringify(oldElements));
-                for (let newElement of newElements) {
-                    const oldElementIndex = oldElements.indexOf(newElement);
-                    if (oldElementIndex > -1) {
-                        oldElements.splice(oldElementIndex, 1);
-                    } else {
-                        const newLeaf = this.$el.parentNode.querySelector(`[data-pid="${newElement}"]`);
-                        if (newLeaf) {
-                            newLeaf.parentNode.__vue__.selectedChild = newElement.split('.').pop();
-                        }
-                        this.expandTree(newElement);
-                    }
-                }
-                for (let oldElement of oldElements) {
-                    const oldLeaf = this.$el.parentNode.querySelector(`[data-pid="${oldElement}"]`);
-                    if (oldLeaf) {
-                        oldLeaf.parentNode.__vue__.selectedChild = null;
-                    }
-                }
-            });
+            this.$root.$on('store::mutation::addSelectedElement', this.handleAddSelectedElement);
+            this.$root.$on('store::mutation::removeSelectedElement', this.handleRemoveSelectedElement);
+            this.$root.$on('store::mutation::setSelectedElements', this.handleSetSelectedElement);
         }
+    },
+    destroyed() {
+        this.$root.$on('store::mutation::addSelectedElement', this.handleAddSelectedElement);
+        this.$root.$off('store::mutation::removeSelectedElement', this.handleRemoveSelectedElement);
+        this.$root.$off('store::mutation::setSelectedElements', this.handleSetSelectedElement);
     },
     methods: {
         addArtboard() {
             store.dispatch('addArtboard');
         },
+        handleAddSelectedElement(selectedElement) {
+            if (this.$el) {
+                const newLeaf = this.$el.parentNode.querySelector(`[data-pid="${selectedElement}"]`);
+                if (newLeaf) {
+                    newLeaf.parentNode.__vue__.selectedChildren.push(parseInt(selectedElement.split('.').pop(), 10));
+                }
+            }
+        },
+        handleRemoveSelectedElement(selectedElement) {
+            if (this.$el) {
+                const oldLeaf = this.$el.parentNode.querySelector(`[data-pid="${selectedElement}"]`);
+                if (oldLeaf) {
+                    const selectedChildren = oldLeaf.parentNode.__vue__.selectedChildren;
+                    const childId = parseInt(selectedElement.split('.').pop(), 10);
+                    for (let i = 0; i < selectedChildren.length; i++) {
+                        if (selectedChildren[i] === childId) {
+                            selectedChildren.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+        },
+        handleSetSelectedElement(newElements, oldElements) {
+            if (this.$el) {
+                for (let oldElement of oldElements) {
+                    const oldLeaf = this.$el.parentNode.querySelector(`[data-pid="${oldElement}"]`);
+                    if (oldLeaf) {
+                        oldLeaf.parentNode.__vue__.selectedChildren = [];
+                    }
+                }
+                for (let newElement of newElements) {
+                    const newLeaf = this.$el.parentNode.querySelector(`[data-pid="${newElement}"]`);
+                    if (newLeaf) {
+                        newLeaf.parentNode.__vue__.selectedChildren.push(parseInt(newElement.split('.').pop(), 10));
+                    }
+                    this.expandTree(newElement);
+                }
+            }
+        },
         onKeyDownSelectionButton() {
         },
         onMouseDownSelectionButton(event, i) {
             const pid = (this.pid ? (this.pid + '.') : '') + i;
-            if (io.events.page_outline_pick_select_modifier) {
-                store.dispatch('addSelectedElement', pid);
-            } else if (io.events.page_outline_group_select_modifier) {
-                store.dispatch('addSelectedElement', pid);
+            if (!this.isRoot && io.events.page_outline_pick_select_modifier) {
+                if (this.selectedElements.includes(pid)) {
+                    store.dispatch('removeSelectedElement', pid);
+                } else {
+                    store.dispatch('addSelectedElement', pid);
+                }
+            } else if (!this.isRoot && io.events.page_outline_group_select_modifier) {
+                if (this.selectedElements.includes(pid)) {
+                    store.dispatch('removeSelectedElement', pid);
+                } else {
+                    store.dispatch('addSelectedElement', pid);
+                }
             } else {
                 store.dispatch('setSelectedElement', pid);
                 store.dispatch('setEditingElement', pid);
+                if (pid && !pid.includes('.')) {
+                    this.$root.$emit('artboardViewer::scrollIntoView', pid);
+                }
             }
         },
         expandTree(pid) {
@@ -183,8 +230,11 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .btn:focus {
     box-shadow: none !important;
+}
+.btn.btn-outline-primary:hover {
+    background: #23272b !important;
 }
 </style>
