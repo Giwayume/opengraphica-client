@@ -97,7 +97,7 @@
                 </template>
                 <b-dropdown-item href="#"><i class="fas fa-save mr-2 text-center" style="width: 1.2rem"></i>Save</b-dropdown-item>
                 <b-dropdown-item href="#"><i class="far fa-save mr-2 text-center" style="width: 1.2rem"></i>Save As</b-dropdown-item>
-                <b-dropdown-item href="#"><i class="fas fa-file-export mr-2 text-center" style="width: 1.2rem"></i>Export</b-dropdown-item>
+                <b-dropdown-item href="#" @click="onClickExport()"><i class="fas fa-file-export mr-2 text-center" style="width: 1.2rem"></i>Export</b-dropdown-item>
             </b-dropdown>
             <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Menu">
                 <i class="fas fa-cog">
@@ -187,6 +187,7 @@ export default {
             'io:keydown:delete',
             'io:keydown:redo',
             'io:keydown:undo',
+            'io:keydown:zoom_default',
             'io:keydown:zoom_in',
             'io:keydown:zoom_out'
         ]);
@@ -214,8 +215,11 @@ export default {
                 const parentElement = selectedElement.replace(/\.[0-9]{0,8}$/g, '');
                 store.dispatch('deleteElements', store.state.selectedElements);
                 store.dispatch('setEditingElement', null);
-                store.dispatch('setSelectedElement', null);
+                store.dispatch('setSelectedElements', []);
             }
+        },
+        onClickExport() {
+            
         },
         onClickUndo() {
             store.dispatch('undoHistory');

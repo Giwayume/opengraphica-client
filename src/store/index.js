@@ -32,11 +32,13 @@ const getElementDefinition = function(state, pageId, elementKey) {
 };
 
 const saveHistorySnapshot = function(state) {
+    /*
     if (state.recordHistory) {
         vuexHistory.saveSnapshot();
         state.canUndo = vuexHistory.canUndo;
         state.canRedo = vuexHistory.canRedo;
     }
+    */
 };
 
 const store = new Vuex.Store({
@@ -51,11 +53,11 @@ const store = new Vuex.Store({
             },
             zoom: 1
         },
-        selectedPage: 0, // ID, not index
-        selectedArtboard: 0, // ID, not index
+        selectedPage: null, // ID, not index
+        selectedArtboard: null, // ID, not index
         selectedElements: [],
         editingElement: null,
-        pageIdCounter: 1,
+        pageIdCounter: 0,
         pages: [
             /*{
                 id: 0,
@@ -75,7 +77,8 @@ const store = new Vuex.Store({
                         dimensions: {
                             w: 600,
                             h: 1200
-                        }
+                        },
+                        items: []
                     },
                     {
                         id: 1,
@@ -85,11 +88,14 @@ const store = new Vuex.Store({
                         dimensions: {
                             w: 400,
                             h: 1200
-                        }
+                        },
+                        items: []
                     }
                 ]
             }*/
-        ]
+        ],
+        resourceIdCounter: 0,
+        resources: []
     },
     getters: {
         elementDefinition(state) {
@@ -102,12 +108,25 @@ const store = new Vuex.Store({
                 return state.pages.filter(page => page.id === pageId)[0] || null;
             };
         },
+        resourceById(state) {
+            return (resourceId) => {
+                return state.resources.filter(resource => resource.id === resourceId)[0] || null;
+            }
+        },
+        selectedArtboardIndex(state, getters) {
+            const selectedPageDefinition = this.getters.pageDefinition(this.selectedPage);
+            if (selectedPageDefinition) {
+                return selectedPageDefinition.outline.filter(artboard => artboard.id === state.selectedArtboard);
+            }
+            return null;
+        },
         selectedElement(state) {
             return state.selectedElements[0] || null;
         }
     },
     mutations: {
-        addArtboard(state) {
+        addArtboard(state, artboardDefinition) {
+            artboardDefinition = artboardDefinition || {};
             const page = state.pages.filter(page => page.id === state.selectedPage)[0];
             if (page) {
                 page.outline.push({
@@ -115,36 +134,77 @@ const store = new Vuex.Store({
                     type: 'artboard',
                     name: 'Artboard ' + page.artboardIdCounter,
                     dimensions: {
-                        w: 500,
-                        h: 500
-                    }
+                        w: artboardDefinition.width || 500,
+                        h: artboardDefinition.height || 500
+                    },
+                    items: []
                 });
             }
+            saveHistorySnapshot(state);
         },
-        addPage(state) {
-            state.pages.push({
-                id: state.pageIdCounter++,
-                name: 'Page ' + state.pageIdCounter,
+        addElement(state, { definition, parent, index }) {
+            if (!parent) {
+                const selectedPageDefinition = state.pages.filter(page => page.id === state.selectedPage)[0] || null;
+                if (selectedPageDefinition) {
+                    if (state.selectedArtboard != null) {
+                        parent = (selectedPageDefinition.outline.filter(artboard => artboard.id === state.selectedArtboard)[0].id) + '';
+                    } else {
+                        parent = '0';
+                    }
+                }
+            }
+            if (index == null) {
+                index = -1;
+            }
+            const parentDefinition = getElementDefinition(state, state.selectedPage, parent);
+            if (parentDefinition) {
+                if (!parentDefinition.items) {
+                    parentDefinition.items = [];
+                }
+                if (index === -1) {
+                    parentDefinition.items.push(definition);
+                } else {
+                    parentDefinition.items.splice(index, 0, definition);
+                }
+            } else {
+                console.warn('[store] Can\'t add element; parent not found. Parent PID: ' + parent);
+            }
+            saveHistorySnapshot(state);
+        },
+        addPage(state, pageDefinition) {
+            pageDefinition = pageDefinition || {};
+            const defaultArtboard = {
+                id: 0,
+                type: 'artboard',
+                name: pageDefinition.artboardName || 'Artboard 1',
+                dimensions: {
+                    w: pageDefinition.artboardWidth || 500,
+                    h: pageDefinition.artboardHeight || 500
+                },
+                items: []
+            };
+            const newPage = {
+                id: state.pageIdCounter,
+                name: pageDefinition.name || 'Page ' + (state.pageIdCounter + 1),
                 artboardDisplay: {
                     position: 'horizontal',
                     align: 'top',
                     spacing: 100
                 },
                 artboardIdCounter: 1,
-                outline: [
-                    {
-                        id: 0,
-                        type: 'artboard',
-                        name: 'Artboard 1',
-                        dimensions: {
-                            w: 500,
-                            h: 500
-                        }
-                    }
-                ]
-            });
-            state.selectedPage = state.pageIdCounter - 1;
+                outline: [defaultArtboard]
+            };
+            state.pages.push(newPage);
+            if (state.selectedPage == null) {
+                state.selectedPage = state.pageIdCounter;
+            }
+            state.pageIdCounter++;
+            vm.$root.$emit('store::mutation::addPage', newPage);
             saveHistorySnapshot(state);
+        },
+        addResource(state, resourceDefinition) {
+            resourceDefinition.id = state.resourceIdCounter++;
+            state.resources.push(resourceDefinition);
         },
         addSelectedElement(state, selectedElement) {
             if (typeof selectedElement === 'string') {
@@ -178,6 +238,7 @@ const store = new Vuex.Store({
             if (state.pages.length > 0) {
                 state.selectedPage = state.pages[0].id;
             }
+            saveHistorySnapshot(state);
         },
         removeSelectedElement(state, selectedElement) {
             if (typeof selectedElement === 'string') {
@@ -196,7 +257,7 @@ const store = new Vuex.Store({
         setEditingElement(state, editingElement) {
             if (editingElement) {
                 const selectedArtboardIndex = parseInt((editingElement || '').split('.')[0], 10) || 0;
-                state.selectedArtboard = state.pages.filter((page) => page.id === state.selectedPage)[0].outline[selectedArtboardIndex];
+                state.selectedArtboard = state.pages.filter((page) => page.id === state.selectedPage)[0].outline[selectedArtboardIndex].id;
             } else {
                 state.selectedArtboard = null;
             }
@@ -261,12 +322,19 @@ const store = new Vuex.Store({
         }
     },
     actions: {
-        addArtboard({ commit }) {
-            commit('addArtboard');
-            commit('setSelectedElement', '0');
+        addArtboard({ commit }, artboardDefinition) {
+            commit('addArtboard', artboardDefinition);
         },
-        addPage({ commit }) {
-            commit('addPage');
+        addElement({ commit }, addDefinition) {
+            commit('addElement', addDefinition);
+        },
+        addPage({ commit, state }, pageDefinition) {
+            commit('addPage', pageDefinition);
+            commit('setSelectedPage', state.pages[state.pages.length-1].id);
+        },
+        async addResource({ commit, state }, resourceDefinition) {
+            commit('addResource', resourceDefinition);
+            return state.resourceIdCounter - 1;
         },
         addSelectedElement({ commit }, selectedElement) {
             commit('addSelectedElement', selectedElement);
@@ -283,6 +351,17 @@ const store = new Vuex.Store({
         },
         deletePage({ commit }, pageId) {
             commit('deletePage', pageId);
+        },
+        editFirstArtboard({ dispatch, getters, state }) {
+            if (state.selectedPage != null) {
+                dispatch('setEditingElement', '0');
+            }
+        },
+        editLastArtboard({ dispatch, getters, state }) {
+            if (state.selectedPage != null) {
+                const outline = getters.pageDefinition(state.selectedPage).outline;
+                dispatch('setEditingElement', (outline.length - 1) + '');
+            }
         },
         removeSelectedElement({ commit, state }, selectedElement) {
             commit('removeSelectedElement', selectedElement);
@@ -321,7 +400,9 @@ const store = new Vuex.Store({
             commit('setRecordHistory', recordHistory);
         },
         setSelectedArtboard({ commit }, selectedArtboard) {
-            commit('setSelectedArtboard', selectedArtboard);
+            if (typeof selectedArtboard === 'number' || selectedArtboard == null) {
+                commit('setSelectedArtboard', selectedArtboard);
+            }
         },
         setSelectedElement({ dispatch }, selectedElement) {
             if (selectedElement != null) {

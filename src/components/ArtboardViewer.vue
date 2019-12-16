@@ -5,7 +5,7 @@
                     transform: 'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomLevel + ')',
                     'transform-origin': 'top left'
                 }">
-                <artboard v-for="(artboard, i) in artboards" :key="artboard.id" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
+                <artboard v-for="(artboard, i) in artboards" :key="artboard.id" :pid="i + ''" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
             </div>
             <p v-else class="text-center">
                 <template v-if="pages.length > 0">
@@ -13,8 +13,9 @@
                     <b-btn variant="darker" class="mt-3" @click="onClickAddArtboard()"><i class="fas fa-plus mr-2"></i>Add an Artboard</b-btn>
                 </template>
                 <template v-else>
-                    There's nothing here.<br>
-                    <b-btn variant="darker" class="mt-3" @click="onClickAddPage()"><i class="fas fa-plus mr-2"></i>Add a Page</b-btn>
+                    Getting Started<br>
+                    <b-btn variant="darker" class="mt-3" @click="onClickAddPage()"><i class="fas fa-plus mr-2"></i>Add a Page</b-btn><br>
+                    <b-btn variant="darker" class="mt-2" @click="onClickOpen()"><i class="fas fa-folder-open mr-2"></i>Open a Design</b-btn>
                 </template>
             </p>
         </div>
@@ -99,13 +100,12 @@ export default {
     },
     mounted() {
         this.scrollIntoView('0');
-        this.$root.$on('artboardViewer::scrollIntoView', (pid) => {
-            this.scrollIntoView(pid);
-        });
-        this.$root.$on('resize', () => {
-            this.positionEditingElement(this.editingElement);
-            this.positionSelectedElement(this.selectedElement);
-        });
+        this.$root.$on('artboardViewer::scrollIntoView', this.scrollIntoView);
+        this.$root.$on('store::mutation::addPage', this.scrollIntoView);
+    },
+    destroyed() {
+        this.$root.$off('artboardViewer::scrollIntoView', this.scrollIntoView);
+        this.$root.$off('store::mutation::addPage', this.scrollIntoView);
     },
     methods: {
         calcElementRootPositionByKey(pid) {
@@ -173,6 +173,9 @@ export default {
         onClickAddPage() {
             this.$store.dispatch('addPage');
         },
+        onClickOpen() {
+            // TODO
+        },
         onKeyDownClickTrap() {
             
         },
@@ -220,14 +223,14 @@ export default {
             */
         },
         scrollIntoView(pid) {
-            const elementDefinition = this.$store.getters.elementDefinition(pid);
+            const elementDefinition = this.$store.getters.elementDefinition(typeof pid === 'string' ? pid : '0');
             if (elementDefinition) {
                 const viewerWidth = this.$el.clientWidth;
                 const viewerHeight = this.$el.clientHeight;
                 // Artboard
                 if (elementDefinition.dimensions) {
                     const maxZoomClip = .9;
-                    if (elementDefinition.dimensions.w - viewerWidth > elementDefinition.dimensions.h > viewerHeight) {
+                    if (elementDefinition.dimensions.w - viewerWidth > elementDefinition.dimensions.h - viewerHeight) {
                         if (elementDefinition.dimensions.w > viewerWidth * maxZoomClip) {
                             this.$store.dispatch('setCanvasZoom', viewerWidth * maxZoomClip / elementDefinition.dimensions.w);
                         } else {

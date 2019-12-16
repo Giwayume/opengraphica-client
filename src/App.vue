@@ -9,6 +9,7 @@
 <script>
 import store from './store';
 import io from '@/lib/io';
+import * as resource from '@/lib/resource';
 
 export default {
     created() {
@@ -16,6 +17,42 @@ export default {
         io.registerVm(this);
         window.addEventListener('resize', (e) => {
             this.$root.$emit('resize', e);
+        });
+        window.addEventListener('paste', async (e) => {
+            if (e.clipboardData) {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let item of items) {
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        const resourceDef = await resource.loadFileAsResource(file);
+                        if (store.state.pages.length === 0) {
+                            await store.dispatch('addPage', {
+                                artboardWidth: resourceDef.meta.width,
+                                artboardHeight: resourceDef.meta.height
+                            });
+                            await store.dispatch('editFirstArtboard');
+                        }
+                        else if (store.state.editingElement == null) {
+                            await store.dispatch('addArtboard', {
+                                width: resourceDef.meta.width,
+                                height: resourceDef.meta.height
+                            });
+                            await store.dispatch('editLastArtboard');
+                        }
+                        store.dispatch('addElement', {
+                            definition: {
+                                name: file.name || 'Pasted Image',
+                                type: 'image',
+                                renderMethod: 'raster',
+                                resourceId: resourceDef.id,
+                                position: { x: 0, y: 0 },
+                                dimensions: { w: resourceDef.meta.width, h: resourceDef.meta.height }
+                            },
+                            parent: store.state.editingElement
+                        });
+                    }
+                }
+            }
         });
     }
 };

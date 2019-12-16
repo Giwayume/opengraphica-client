@@ -1,6 +1,6 @@
 <template>
-    <div v-if="selectedPage != null" role="tablist" class="d-block flex-grow-1 w-100">
-        <div v-if="isRoot" class="d-flex bg-dark-medium text-white pl-3 py-2 align-items-center">
+    <div role="tablist" class="d-block flex-grow-1 w-100">
+        <div v-if="isRoot && selectedPage != null" class="d-flex bg-dark-medium text-white pl-3 py-2 align-items-center">
             <strong class="text-nowrap text-truncate">{{ selectedPage.name }}</strong>
             <b-button
                 variant="dark-medium" size="sm" class="py-0 ml-auto"
@@ -34,6 +34,7 @@
                     @mousedown="onMouseDownSelectionButton($event, i)">
                     <i class="text-center" :class="{
                         'fas fa-chalkboard': item.type == 'artboard',
+                        'fas fa-image': item.type == 'image',
                         'fas fa-folder-open': item.expanded && item.type == 'group',
                         'fas fa-folder': !item.expanded && item.type == 'group',
                         'fas fa-font': item.type == 'text',
@@ -44,7 +45,7 @@
                 </b-button>
             </b-card-header>
             <b-collapse v-if="item.items && item.items.length > 0" :id="'page-outline-' + uuid + '_' + i" v-model="item.expanded" role="tabpanel">
-                <page-outline v-if="item.expanded" :items="item.items" :level="level + 1" :pid="(pid ? (pid+'.') : '' ) + i" />
+                <page-outline :items="item.items" :level="level + 1" :pid="(pid ? (pid+'.') : '' ) + i" />
             </b-collapse>
         </b-card>
     </div>
@@ -101,7 +102,7 @@ export default {
             if (this.isRoot) {
                 return store.state.selectedElements;
             } else {
-                return null;
+                return [];
             }
         },
         selectedPage() {
@@ -114,11 +115,13 @@ export default {
     },
     mounted() {
         // Prefill "selectedChildren" list to keep track of selection when shown.
-        for (let i = 0; i < this.selectedElements.length; i++) {
-            if (this.selectedElements[i].startsWith(this.pid)) {
-                const index = this.selectedElements[i].replace(this.pid + '.');
-                if (!index.includes('.')) {
-                    this.selectedChildren.push(parseInt(index, 10));
+        if (this.selectedElements) {
+            for (let i = 0; i < this.selectedElements.length; i++) {
+                if (this.selectedElements[i].startsWith(this.pid)) {
+                    const index = this.selectedElements[i].replace(this.pid + '.');
+                    if (!index.includes('.')) {
+                        this.selectedChildren.push(parseInt(index, 10));
+                    }
                 }
             }
         }

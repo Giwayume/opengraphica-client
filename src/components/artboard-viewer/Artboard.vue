@@ -9,22 +9,26 @@
             width: width
         }">
         <div class="text-light" style="position: absolute; top: -25px">{{ definition.name }}</div>
-        <group :definition="rootDefinition" pid="0" :is-root="true" />
+        <viewer-canvas :definition="definition" :pid="pid" />
     </div>
 </template>
 
 <script>
 import store from '@/store';
-import Group from './Group.vue';
+import Canvas from './Canvas.vue';
 
 export default {
     name: 'ViewerArtboard',
     components: {
-        'group': Group
+        'viewer-canvas': Canvas
     },
     props: {
         definition: {
             type: Object,
+            default: null
+        },
+        pid: {
+            type: String,
             default: null
         },
         previousArtboards: {
@@ -56,16 +60,6 @@ export default {
                 }
             }
             return left + 'px';
-        },
-        rootDefinition() {
-            return {
-                type: 'group',
-                style: {
-                    height: this.definition.dimensions.h,
-                    width: this.definition.dimensions.w
-                },
-                items: this.definition.items
-            };
         },
         selectedPageDefinition() {
             return store.state.pages.filter(page => page.id === store.state.selectedPage)[0];

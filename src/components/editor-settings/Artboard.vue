@@ -40,8 +40,9 @@
                         </b-input-group-prepend>
                         <b-form-input
                             class="bg-dark-medium text-white border-dark"
+                            type="number"
                             v-model="settings.dimensions.w"
-                            @blur="updateSettings"
+                            @input="updateSettings"
                             @keydown.enter="updateSettings"
                         ></b-form-input>
                     </b-input-group>
@@ -59,8 +60,9 @@
                         </b-input-group-prepend>
                         <b-form-input
                             class="bg-dark-medium text-white border-dark"
+                            type="number"
                             v-model="settings.dimensions.h"
-                            @blur="updateSettings"
+                            @input="updateSettings"
                             @keydown.enter="updateSettings"
                         ></b-form-input>
                     </b-input-group>

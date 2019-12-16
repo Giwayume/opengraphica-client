@@ -88,7 +88,7 @@
 
 <script>
 import store from '@/store';
-import uuidv4 from 'uuid';
+import uuid from 'uuid';
 import AccordionSection from './AccordionSection.vue';
 
 export default {
@@ -129,7 +129,7 @@ export default {
     data() {
         return {
             settings: null,
-            uuid: uuidv4()
+            uuid: uuid()
         };
     },
     watch: {
