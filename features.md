@@ -1,0 +1,38 @@
+- [ ] File Export
+    - [ ] PNG
+    - [ ] WEBP
+    - [ ] JPG
+    - [ ] GIF
+    - [ ] MKV
+    - [ ] MP4
+    - [ ] OGG
+    - [ ] WEBM
+    - [ ] AVI
+    - [ ] MPG
+    - [ ] Native application select directory (instead of download)
+    - [ ] Retain settings for next export
+- [ ] Artboard Rendering
+    - [ ] Adding Guidelines
+    - [ ] Snapping to Guidelines
+    - [ ] Zooming with Mousewheel
+    - 
+- [ ] Tools
+    - [ ] Select/Move
+    - [ ] Pan View
+        - [ ] With Cursor
+        - [ ] With Keyboard Controls
+    - [ ] Zoom
+        - [ ] Click + Drag Left/Right Zoom
+        - [ ] Click Zoom In One Level
+        - [ ] Alt + Click Zoom Out One Level
+    - [ ] Add Group
+    - [ ] Add Text
+    - [ ] Add Line
+    - [ ] Add Rectangle
+    - [ ] Add Oval
+    - [ ] Add Image
+    - [ ] Add Vector
+- [ ] Artboard Outline
+    - [x] Deleting
+    - [ ] Drag & Drop Moving
+    - [ ] Keyboard Control Moving

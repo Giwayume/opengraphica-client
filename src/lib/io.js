@@ -20,6 +20,9 @@ const eventKeyMap = {
     delete: {
         keys: 'delete'
     },
+    export: {
+        keys: 'ctrl e'
+    },
     page_outline_pick_select_modifier: {
         keys: 'ctrl',
         is_solitary: false,
@@ -77,7 +80,7 @@ for (let eventName in eventKeyMap) {
                         io.modifierComboLock = true;
                     }
                     io.events[eventName] = true;
-                    vm.$root.$emit('io:keydown:' + eventName, nativeEvent);
+                    vm.$root.$emit('io::keydown::' + eventName, nativeEvent);
                 }
             },
             on_keyup: function(event) {
@@ -85,7 +88,7 @@ for (let eventName in eventKeyMap) {
                     io.modifierComboLock = false;
                 }
                 io.events[eventName] = false;
-                vm.$root.$emit('io:keyup:' + eventName, event);
+                vm.$root.$emit('io::keyup::' + eventName, event);
             },
             prevent_default: false,
             prevent_repeat: event.prevent_repeat !== false
@@ -97,7 +100,7 @@ window.addEventListener('blur', () => {
     for (let eventName in io.events) {
         if (io.events[eventName]) {
             io.events[eventName] = false;
-            vm.$root.$emit('io:keyup:' + eventName, new KeyboardEvent('foo'));
+            vm.$root.$emit('io::keyup::' + eventName, new KeyboardEvent('foo'));
         }
     }
 });

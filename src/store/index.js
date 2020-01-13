@@ -273,6 +273,8 @@ const store = new Vuex.Store({
         },
         setSelectedArtboard(state, selectedArtboard) {
             state.selectedArtboard = selectedArtboard;
+            const elementIndex = state.pages.filter((page) => page.id === state.selectedPage)[0].outline.findIndex((artboard) => artboard.id === selectedArtboard);
+            state.editingElement = '' + elementIndex;
         },
         setSelectedElements(state, selectedElements) {
             if (selectedElements.toString() !== state.selectedElements.toString()) {

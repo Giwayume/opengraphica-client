@@ -87,11 +87,14 @@ export default {
     },
     mounted() {
         this.$refs.canvasContainer.appendChild(this.renderer.domElement);
+        this.renderer.domElement.setAttribute('data-artboard-id', this.definition.id);
         this.draw();
         this.$root.$on('artboard::' + this.pid + '::draw', this.draw);
+        this.$root.$on('artboards::draw', this.draw);
     },
     destroyed() {
         this.$root.$off('artboard::' + this.pid + '::draw', this.draw);
+        this.$root.$off('artboards::draw', this.draw);
         this.camera = null;
         this.scene = null;
         this.renderer.getContext().getExtension('WEBGL_lose_context').loseContext();
@@ -102,9 +105,9 @@ export default {
             if (!this.drawFlag) {
                 this.drawFlag = true;
                 requestAnimationFrame(() => {
-                    console.log('draw');
                     this.renderer.render(this.scene, this.camera);
                     this.drawFlag = false;
+                    this.$root.$emit('artboards::drawn');
                 });
             }
         },

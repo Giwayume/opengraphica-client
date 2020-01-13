@@ -1,11 +1,13 @@
 import Vue from 'vue';
 import BootstrapVue from 'bootstrap-vue';
-import Vue2TouchEvents from 'vue2-touch-events'
+import Vue2TouchEvents from 'vue2-touch-events';
+import VueInputAutowidth from 'vue-input-autowidth';
 
 Vue.config.productionTip = false;
 
 Vue.use(BootstrapVue);
-Vue.use(Vue2TouchEvents)
+Vue.use(Vue2TouchEvents);
+Vue.use(VueInputAutowidth);
 
 import App from './App.vue';
 import router from './router';

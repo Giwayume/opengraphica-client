@@ -105,6 +105,19 @@
                 </i>
             </b-button>
         </div>
+        <b-modal
+            title="Export"
+            header-bg-variant="dark"
+            header-text-variant="white"
+            body-bg-variant="dark"
+            body-text-variant="white"
+            footer-bg-variant="dark"
+            footer-text-variant="white"
+            centered
+            hide-footer
+            v-model="showExportDialog">
+            <component :is="'export-dialog'" @export-complete="showExportDialog = false;" />
+        </b-modal>
     </div>
 </template>
 
@@ -113,6 +126,9 @@ import store from '@/store';
 
 export default {
     name: 'ActionToolbar',
+    components: {
+        'export-dialog': () => import('@/components/dialogs/ExportDialog.vue')
+    },
     computed: {
         canUndo() {
             return true;
@@ -157,39 +173,44 @@ export default {
     },
     data() {
         return {
+            showExportDialog: false,
             zoomLevelIsFocused: false,
             zoomLevels: []
         };
     },
     mounted() {
         this.generateZoomLevels();
-        this.$root.$on('io:keydown:delete', () => {
+        this.$root.$on('io::keydown::delete', () => {
             this.onClickDelete();
         });
-        this.$root.$on('io:keydown:redo', () => {
+        this.$root.$on('io::keydown::export', () => {
+            this.onClickExport();
+        });
+        this.$root.$on('io::keydown::redo', () => {
             this.onClickRedo();
         });
-        this.$root.$on('io:keydown:undo', () => {
+        this.$root.$on('io::keydown::undo', () => {
             this.onClickUndo();
         });
-        this.$root.$on('io:keydown:zoom_default', () => {
+        this.$root.$on('io::keydown::zoom_default', () => {
             this.onClickZoomDefault();
         });
-        this.$root.$on('io:keydown:zoom_in', () => {
+        this.$root.$on('io::keydown::zoom_in', () => {
             this.onClickZoomIn();
         });
-        this.$root.$on('io:keydown:zoom_out', () => {
+        this.$root.$on('io::keydown::zoom_out', () => {
             this.onClickZoomOut();
         });
     },
     destroyed() {
         this.$root.$off([
-            'io:keydown:delete',
-            'io:keydown:redo',
-            'io:keydown:undo',
-            'io:keydown:zoom_default',
-            'io:keydown:zoom_in',
-            'io:keydown:zoom_out'
+            'io::keydown::delete',
+            'io::keydown::export',
+            'io::keydown::redo',
+            'io::keydown::undo',
+            'io::keydown::zoom_default',
+            'io::keydown::zoom_in',
+            'io::keydown::zoom_out'
         ]);
     },
     methods: {
@@ -219,7 +240,7 @@ export default {
             }
         },
         onClickExport() {
-            
+            this.showExportDialog = true;
         },
         onClickUndo() {
             store.dispatch('undoHistory');
