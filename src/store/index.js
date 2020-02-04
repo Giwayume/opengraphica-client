@@ -95,7 +95,11 @@ const store = new Vuex.Store({
             }*/
         ],
         resourceIdCounter: 0,
-        resources: []
+        resources: [],
+        windowSize: {
+            width: window.innerWidth,
+            height: window.innerHeight
+        }
     },
     getters: {
         elementDefinition(state) {
@@ -294,6 +298,9 @@ const store = new Vuex.Store({
         setSelectedPage(state, selectedPage) {
             state.selectedPage = selectedPage;
         },
+        setWindowSize(state, windowSize) {
+            state.windowSize = windowSize;
+        },
         updateElementDefinition(state, { pid, definition }) {
             let elementDefinition = getElementDefinition(state, state.selectedPage, pid);
             for (let prop in definition) {
@@ -428,6 +435,9 @@ const store = new Vuex.Store({
         },
         setSelectedPage({ commit }, selectedPage) {
             commit('setSelectedPage', selectedPage);
+        },
+        setWindowSize({ commit }, windowSize) {
+            commit('setWindowSize', windowSize);
         },
         updateElementDefinition({ commit }, def) {
             commit('updateElementDefinition', def);

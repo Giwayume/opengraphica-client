@@ -16,6 +16,7 @@ export default {
         store.registerVm(this);
         io.registerVm(this);
         window.addEventListener('resize', (e) => {
+            store.dispatch('setWindowSize', { width: window.innerWidth, height: window.innerHeight });
             this.$root.$emit('resize', e);
         });
         window.addEventListener('paste', async (e) => {

@@ -59,6 +59,81 @@ $theme-colors: (
     user-select: none;
 }
 
+.pane-rs > .pane {
+    contain: strict;
+}
 .Resizer {
     z-index: 0 !important;
+}
+.app-sidebar-mode-reveal {
+    .pane-rs {
+        > .Pane {
+            overflow: visible !important;
+
+            .app-sidebar {
+                position: relative;
+                transition: transform 0.3s;
+                width: 300px;
+
+                > .app-sidebar-handle {
+                    background: rgba(0, 0, 0, 0.4);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: rgba(255, 255, 255, 0.3);
+                    cursor: pointer;
+                    height: 40px;
+                    line-height: 40px;
+                    position: absolute;
+                    text-align: center;
+                    top: 10px;
+                    width: 25px;
+
+                    > .fas {
+                        font-size: 1.5rem;
+                        line-height: 40px;
+                        margin-top: -1px;
+                    }
+
+                    &:hover {
+                        background: rgba(0, 0, 0, 0.7);
+                        border: 1px solid rgba(255, 255, 255, 0.6);
+                        color: rgba(255, 255, 255, 0.6);
+                    }
+                }
+
+                &.app-sidebar-left {
+                    transform: translateX(-100%);
+
+                    > .fas {
+                        top: -1px;
+                    }
+                    > .app-sidebar-handle {
+                        border-left: none;
+                        border-radius: 0 10px 10px 0;
+                        right: -25px;
+                    }
+
+                    &.app-sidebar-open {
+                        transform: translateX(0);
+                    }
+                }
+                &.app-sidebar-right {
+                    > .app-sidebar-handle {
+                        border-right: none;
+                        border-radius: 10px 0 0 10px;
+                        left: -25px;
+                    }
+
+                    &.app-sidebar-open {
+                        transform: translateX(-100%);
+                    }
+                }
+            }
+        }
+        &.app-panes-left > .Pane:first-child {
+            z-index: 1;
+        }
+        &.app-panes-right > .Pane:last-child {
+            z-index: 1;
+        }
+    }
 }

@@ -3,20 +3,28 @@
         <div class="flex-grow-0 flex-shrink-1 app-header text-white d-flex flex-row justify-content-between">
             <action-toolbar />
         </div>
-        <div class="position-relative flex-grow-1">
-            <rs-panes ref="rsPanes1" split-to="columns" :allow-resize="true" :size="sidebarInitialSize"
-                :max-size="sidebarMaxWidth" resizer-color="#4b5157" @update:size="onUpdatePaneSize($event)">
-                <div slot="firstPane" class="h-100 bg-dark d-flex flex-column">
+        <div class="position-relative flex-grow-1" :class="'app-sidebar-mode-' + sidebarMode">
+            <rs-panes ref="rsPanes1" split-to="columns" :allow-resize="sidebarMode === 'panes'" :size="sidebarMode === 'panes' ? leftSidebarSize : 0"
+                :max-size="sidebarMaxWidth" resizer-color="#4b5157" class="app-panes-left" @update:size="onUpdatePaneSize('left', $event)">
+                <div slot="firstPane" class="app-sidebar app-sidebar-left h-100 bg-dark d-flex flex-column" :class="{ 'app-sidebar-open': openSidebar === 'left' }">
+                    <div v-if="sidebarMode === 'reveal'" class="app-sidebar-handle" role="button" tabindex="0" @click="onOpenSidebar('left')">
+                        <i class="fas" :class="openSidebar === 'left' ? 'fa-times' : 'fa-chevron-right'"></i>
+                        <span class="sr-only">Reveal Left Sidebar</span>
+                    </div>
                     <page-selector />
                     <page-outline :is-root="true" />
                 </div>
-                <rs-panes ref="rsPanes2" slot="secondPane" split-to="columns" :allow-resize="true"
-                    primary="second" :size="sidebarInitialSize" :max-size="sidebarMaxWidth"
-                    resizer-color="#4b5157" @update:size="onUpdatePaneSize($event)">
+                <rs-panes ref="rsPanes2" slot="secondPane" split-to="columns" :allow-resize="sidebarMode === 'panes'"
+                    primary="second" :size="sidebarMode === 'panes' ? rightSidebarSize : 0" :max-size="sidebarMaxWidth"
+                    resizer-color="#4b5157" class="app-panes-right" @update:size="onUpdatePaneSize('right', $event)">
                     <div slot="firstPane" class="h-100" style="background-color: #151515; color: white;">
                         <artboard-viewer />
                     </div>
-                    <div slot="secondPane" class="h-100 bg-dark">
+                    <div slot="secondPane" class="app-sidebar app-sidebar-right h-100 bg-dark" :class="{ 'app-sidebar-open': openSidebar === 'right' }">
+                        <div v-if="sidebarMode === 'reveal'" class="app-sidebar-handle" role="button" tabindex="0" @click="onOpenSidebar('right')">
+                            <i class="fas" :class="openSidebar === 'right' ? 'fa-times' : 'fa-chevron-left'"></i>
+                            <span class="sr-only">Reveal Right Sidebar</span>
+                        </div>
                         <editor-settings />
                     </div>
                 </rs-panes>
@@ -45,8 +53,18 @@ export default {
     },
     data() {
         return {
-            sidebarInitialSize: (window.innerWidth / 6),
+            leftSidebarSize: (window.innerWidth / 6),
+            openSidebar: null,
+            rightSidebarSize: (window.innerWidth / 6),
             sidebarMaxWidth: (window.innerWidth / 2) - 10
+        }
+    },
+    computed: {
+        sidebarMode() {
+            return this.windowWidth > 900 ? 'panes' : 'reveal';
+        },
+        windowWidth() {
+            return this.$store.state.windowSize.width;
         }
     },
     mounted() {
@@ -62,7 +80,17 @@ export default {
         };
     },
     methods: {
-        onUpdatePaneSize() {
+        onOpenSidebar(sidebar) {
+            this.openSidebar = (this.openSidebar === sidebar) ? null : sidebar;
+        },
+        onUpdatePaneSize(side, size) {
+            if (this.sidebarMode === 'panes') {
+                if (side === 'left') {
+                    this.leftSidebarSize = size;
+                } else if (side === 'right') {
+                    this.rightSidebarSize = size;
+                }
+            }
             this.$root.$emit('resize-end');
         }
     }
