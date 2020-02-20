@@ -44,8 +44,8 @@
         </div>
         <div class="d-flex flex-row">
             <b-input-group class="mx-1 my-0 flex-nowrap align-content-start">
-                <b-input-group-prepend v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Pan">
-                    <b-button variant="dark-medium">
+                <b-input-group-prepend v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Pan View">
+                    <b-button :variant="selectedTool === 'pan' ? 'dark' : 'dark-medium'" @click="selectedTool = (selectedTool === 'pan') ? 'select' : 'pan'">
                         <i class="fas fa-arrows-alt"></i>
                     </b-button>
                 </b-input-group-prepend>
@@ -156,6 +156,14 @@ export default {
                     x: this.panX,
                     y: parseFloat(panY) || 0
                 });
+            }
+        },
+        selectedTool: {
+            get() {
+                return this.$store.state.selectedTool;
+            },
+            set(toolName) {
+                this.$store.dispatch('setSelectedTool', toolName);
             }
         },
         zoomLevel: {

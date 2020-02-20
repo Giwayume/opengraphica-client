@@ -50,6 +50,12 @@ const eventKeyMap = {
     zoom_default: {
         keys: 'ctrl 0'
     },
+    zoom_switch_modifier: {
+        keys: ['ctrl', 'alt'],
+        is_solitary: false,
+        is_exclusive: false,
+        prevent_default: false
+    },
     zoom_in: {
         keys: 'ctrl ='
     },

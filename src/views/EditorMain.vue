@@ -11,8 +11,13 @@
                         <i class="fas" :class="openSidebar === 'left' ? 'fa-times' : 'fa-chevron-right'"></i>
                         <span class="sr-only">Reveal Left Sidebar</span>
                     </div>
-                    <page-selector />
-                    <page-outline :is-root="true" />
+                    <div class="d-flex flex-row h-100">
+                        <div class="flex-grow-1 flex-shrink-1 overflow-hidden"> 
+                            <page-selector />
+                            <page-outline :is-root="true" />
+                        </div>
+                        <tool-selector class="flex-grow-0 flex-shrink-0" />
+                    </div>
                 </div>
                 <rs-panes ref="rsPanes2" slot="secondPane" split-to="columns" :allow-resize="sidebarMode === 'panes'"
                     primary="second" :size="sidebarMode === 'panes' ? rightSidebarSize : 0" :max-size="sidebarMaxWidth"
@@ -38,6 +43,7 @@ import ActionToolbar from '@/components/ActionToolbar.vue';
 import ArtboardViewer from '@/components/ArtboardViewer.vue';
 import PageOutline from '@/components/PageOutline.vue';
 import PageSelector from '@/components/PageSelector.vue';
+import ToolSelector from '@/components/ToolSelector.vue';
 import EditorSettings from '@/components/EditorSettings.vue';
 import ResSplitPane from 'vue-resize-split-pane';
 
@@ -49,11 +55,12 @@ export default {
         'editor-settings': EditorSettings,
         'page-outline': PageOutline,
         'page-selector': PageSelector,
-        'rs-panes': ResSplitPane
+        'rs-panes': ResSplitPane,
+        'tool-selector': ToolSelector
     },
     data() {
         return {
-            leftSidebarSize: (window.innerWidth / 6),
+            leftSidebarSize: (window.innerWidth / 5),
             openSidebar: null,
             rightSidebarSize: (window.innerWidth / 6),
             sidebarMaxWidth: (window.innerWidth / 2) - 10

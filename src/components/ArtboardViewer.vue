@@ -1,7 +1,17 @@
 <template>
-    <div class="position-relative w-100 h-100 user-select-none">
+    <div
+        class="position-relative w-100 h-100 user-select-none"
+        :class="artboards && artboards.length > 0 ? 'viewer-current-tool-' + selectedTool : ''"
+        v-touch:start="onTouchStartViewer"
+        v-touch:tap="onTouchTapViewer"
+        v-touch:moved="onTouchMovedViewer"
+        v-touch:moving="onTouchMovingViewer"
+        v-touch:end="onTouchEndViewer">
         <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center">
-            <div v-if="artboards && artboards.length > 0" class="position-relative" :style="{
+            <div
+                v-if="artboards && artboards.length > 0"
+                class="position-relative"
+                :style="{
                     transform: 'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomLevel + ')',
                     'transform-origin': 'top left'
                 }">
@@ -48,9 +58,13 @@
 <script>
 import store from '@/store';
 import Artboard from './artboard-viewer/Artboard.vue';
+import toolControllerMixin from '@/mixins/toolController.js';
 
 export default {
     name: 'ArtboardViewer',
+    mixins: [
+        toolControllerMixin
+    ],
     components: {
         'artboard': Artboard
     },
@@ -66,6 +80,9 @@ export default {
         },
         selectedPage() {
             return store.state.selectedPage;
+        },
+        selectedTool() {
+            return store.state.selectedTool;
         },
         outline() {
             const selectedPage = store.state.selectedPage;
@@ -196,6 +213,21 @@ export default {
             }
             this.$refs.clickTrap.focus();
         },
+        onTouchStartViewer(e) {
+            this.$onTouchStartTool(e);
+        },
+        onTouchTapViewer(e) {
+            this.$onTouchTapTool(e);
+        },
+        onTouchMovedViewer(e) {
+            this.$onTouchMovedTool(e);
+        },
+        onTouchMovingViewer(e) {
+            this.$onTouchMovingTool(e);
+        },
+        onTouchEndViewer(e) {
+            this.$onTouchEndTool(e);
+        },
         positionEditingElement(newElement) {
             /*
             if (newElement) {
@@ -309,6 +341,21 @@ export default {
     100% {
         box-shadow: 0 0 0 1px #ccc;
     }
+}
+.viewer-current-tool-select {
+    cursor: default;
+}
+.viewer-current-tool-pan {
+    cursor: grab;
+}
+.viewer-current-tool-pan-alt {
+    cursor: grabbing;
+}
+.viewer-current-tool-zoom {
+    cursor: zoom-in;
+}
+.viewer-current-tool-zoom-alt {
+    cursor: zoom-out;
 }
 .selected-element-outline {
     animation: selected-element-outline 1.5s infinite;

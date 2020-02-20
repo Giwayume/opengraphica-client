@@ -33,6 +33,7 @@ $font-family-sans-serif: 'Montserrat', Arial, sans-serif;
 $theme-colors: (
     "dark-medium": #41474e,
     "darker": #23272b,
+    "darker-medium": #2f3337,
     "light-medium": #b2bcc6
 );
 
@@ -101,7 +102,7 @@ $theme-colors: (
                 }
 
                 &.app-sidebar-left {
-                    transform: translateX(-100%);
+                    transform: translateX(calc(-100% + 3rem));
 
                     > .fas {
                         top: -1px;

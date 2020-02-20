@@ -53,6 +53,26 @@ const store = new Vuex.Store({
             },
             zoom: 1
         },
+        tools: {
+            pan: {
+                title: 'Pan/Rotate View',
+                icon: 'fas fa-arrows-alt'
+            },
+            select: {
+                title: 'Select/Drag',
+                icon: 'fas fa-mouse-pointer'
+            },
+            zoom: {
+                title: 'Zoom/Pan',
+                icon: 'fas fa-search-plus'
+            }
+        },
+        toolOrder: [
+            'select',
+            'pan',
+            'zoom'
+        ],
+        selectedTool: 'select',
         selectedPage: null, // ID, not index
         selectedArtboard: null, // ID, not index
         selectedElements: [],
@@ -298,6 +318,9 @@ const store = new Vuex.Store({
         setSelectedPage(state, selectedPage) {
             state.selectedPage = selectedPage;
         },
+        setSelectedTool(state, selectedTool) {
+            state.selectedTool = selectedTool;
+        },
         setWindowSize(state, windowSize) {
             state.windowSize = windowSize;
         },
@@ -435,6 +458,9 @@ const store = new Vuex.Store({
         },
         setSelectedPage({ commit }, selectedPage) {
             commit('setSelectedPage', selectedPage);
+        },
+        setSelectedTool({ commit }, selectedTool) {
+            commit('setSelectedTool', selectedTool);
         },
         setWindowSize({ commit }, windowSize) {
             commit('setWindowSize', windowSize);
