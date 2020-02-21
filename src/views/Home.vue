@@ -13,7 +13,7 @@
                 <span class="d-block text-muted my-2">(Currently in alpha testing)</span>
             </p>
             <div class="pt-2">
-                <router-link ref="useOnlineLink" to="edit" class="btn btn-lg btn-outline-light mx-2 my-2">Use Online</router-link>
+                <router-link ref="useOnlineLink" to="edit" class="btn btn-lg btn-outline-light mx-2 my-2" v-touch:start="onUseOnline">Use Online</router-link>
                 <a class="btn btn-lg btn-outline-light mx-2 my-2" target="_blank" href="https://github.com/opengraphica/opengraphica-app/releases">Download</a>
             </div>
         </div>
@@ -25,12 +25,21 @@ export default {
     mounted() {
         this.$refs.logoIcon.classList.add('opengraphica-logo-glow');
         setTimeout(() => {
-            this.$refs.useOnlineLink.$el.classList.add('opengraphica-home-button-glow');
+            if (this.$refs.useOnlineLink) {
+                this.$refs.useOnlineLink.$el.classList.add('opengraphica-home-button-glow');
+            }
         }, 400);
         for (let i = 0; i < this.$refs.logoLetter.length; i++) {
             setTimeout(() => {
-                this.$refs.logoLetter[i].classList.add('opengraphica-logo-glow');
+                if (this.$refs.logoLetter[i]) {
+                    this.$refs.logoLetter[i].classList.add('opengraphica-logo-glow');
+                }
             }, i * 100);
+        }
+    },
+    methods: {
+        onUseOnline() {
+            this.$store.dispatch('setSkipHomePage', true);
         }
     }
 };

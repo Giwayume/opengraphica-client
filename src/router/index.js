@@ -11,7 +11,7 @@ const routes = [
     },
 	{
 		path: '/edit',
-		name: 'editorMain',
+		name: 'editor-main',
 		component: () => import(/* webpackChunkName: "editor-main" */ '../views/EditorMain.vue')
     }
 ];

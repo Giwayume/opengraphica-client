@@ -23,7 +23,7 @@
                     primary="second" :size="sidebarMode === 'panes' ? rightSidebarSize : 0" :max-size="sidebarMaxWidth"
                     resizer-color="#4b5157" class="app-panes-right" @update:size="onUpdatePaneSize('right', $event)">
                     <div slot="firstPane" class="h-100" style="background-color: #151515; color: white;">
-                        <artboard-viewer />
+                        <artboard-viewer :sidebar-mode="sidebarMode" />
                     </div>
                     <div slot="secondPane" class="app-sidebar app-sidebar-right h-100 bg-dark" :class="{ 'app-sidebar-open': openSidebar === 'right' }">
                         <div v-if="sidebarMode === 'reveal'" class="app-sidebar-handle" role="button" tabindex="0" @click="onOpenSidebar('right')">

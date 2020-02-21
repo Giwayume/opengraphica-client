@@ -1,5 +1,6 @@
 <template>
     <div :style="{
+            contain: 'strict',
             height: height,
             width: width
         }">

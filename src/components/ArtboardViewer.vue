@@ -7,11 +7,13 @@
         v-touch:moved="onTouchMovedViewer"
         v-touch:moving="onTouchMovingViewer"
         v-touch:end="onTouchEndViewer">
-        <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center">
+        <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center" style="contain: content">
             <div
                 v-if="artboards && artboards.length > 0"
+                id="artboard-viewer-positioning-container"
                 class="position-relative"
                 :style="{
+                    contain: 'layout',
                     transform: 'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomLevel + ')',
                     'transform-origin': 'top left'
                 }">
@@ -67,6 +69,12 @@ export default {
     ],
     components: {
         'artboard': Artboard
+    },
+    props: {
+        sidebarMode: {
+            type: String,
+            default: 'panes'
+        }
     },
     computed: {
         artboards() {
@@ -257,7 +265,8 @@ export default {
         scrollIntoView(pid) {
             const elementDefinition = this.$store.getters.elementDefinition(typeof pid === 'string' ? pid : '0');
             if (elementDefinition) {
-                const viewerWidth = this.$el.clientWidth;
+                const toolbarWidth = 42;
+                const viewerWidth = this.$el.clientWidth - (this.sidebarMode === 'reveal' ? toolbarWidth : 0);
                 const viewerHeight = this.$el.clientHeight;
                 // Artboard
                 if (elementDefinition.dimensions) {
@@ -292,7 +301,7 @@ export default {
                                 primaryDimensionOffset += (artboardDisplay.position === 'horizontal' ? artboard.dimensions.w : artboard.dimensions.h) + artboardDisplay.spacing;
                             }
                         } else {
-                            let xOffset = -(artboardDisplay.position === 'horizontal' ? primaryDimensionOffset : secondaryDimensionOffset);
+                            let xOffset = -(artboardDisplay.position === 'horizontal' ? primaryDimensionOffset : secondaryDimensionOffset) + (this.sidebarMode === 'reveal' ? toolbarWidth/1.25 : 0);
                             let yOffset = -(artboardDisplay.position === 'horizontal' ? secondaryDimensionOffset : primaryDimensionOffset);
                             if (['top', 'bottom', 'left'].includes(artboardDisplay.align) || (artboardDisplay.position === 'horizontal' && artboardDisplay.align === 'center')) {
                                 xOffset -= elementDefinition.dimensions.w / 2;

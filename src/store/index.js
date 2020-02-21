@@ -76,6 +76,7 @@ const store = new Vuex.Store({
         selectedPage: null, // ID, not index
         selectedArtboard: null, // ID, not index
         selectedElements: [],
+        skipHomePage: false,
         editingElement: null,
         pageIdCounter: 0,
         pages: [
@@ -321,6 +322,10 @@ const store = new Vuex.Store({
         setSelectedTool(state, selectedTool) {
             state.selectedTool = selectedTool;
         },
+        setSkipHomePage(state, skipHomePage) {
+            state.skipHomePage = skipHomePage;
+            localStorage.setItem('skipHomePage', skipHomePage + '');
+        },
         setWindowSize(state, windowSize) {
             state.windowSize = windowSize;
         },
@@ -395,6 +400,10 @@ const store = new Vuex.Store({
                 dispatch('setEditingElement', (outline.length - 1) + '');
             }
         },
+        async loadStorage({ dispatch }) {
+            const skipHomePage = localStorage.getItem('skipHomePage') == 'true';
+            await dispatch('setSkipHomePage', skipHomePage);
+        },
         removeSelectedElement({ commit, state }, selectedElement) {
             commit('removeSelectedElement', selectedElement);
             if (selectedElement === state.editingElement) {
@@ -461,6 +470,9 @@ const store = new Vuex.Store({
         },
         setSelectedTool({ commit }, selectedTool) {
             commit('setSelectedTool', selectedTool);
+        },
+        setSkipHomePage({ commit }, skipHomePage) {
+            commit('setSkipHomePage', skipHomePage);
         },
         setWindowSize({ commit }, windowSize) {
             commit('setWindowSize', windowSize);
