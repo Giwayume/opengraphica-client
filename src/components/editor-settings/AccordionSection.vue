@@ -7,7 +7,7 @@
                 style="border-top: 1px solid #555b60"
                 v-b-toggle="'accordion-section-' + uuid">
                 <strong class="text-nowrap text-truncate overflow-hidden">{{ title }}</strong>
-                <i class="fas text-center ml-auto h4 my-0" :class="{ 'fa-angle-right': !expanded, 'fa-angle-down': expanded }" style="width: 1em">
+                <i class="fas text-center ml-auto fa-1d5x my-0" :class="{ 'fa-angle-right': !expanded, 'fa-angle-down': expanded }" style="width: 1em">
                     <span class="sr-only">{{ expanded ? 'Expanded' : 'Collapsed' }}</span>
                 </i>
             </b-button>
