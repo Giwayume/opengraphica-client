@@ -127,7 +127,7 @@ import store from '@/store';
 export default {
     name: 'ActionToolbar',
     components: {
-        'export-dialog': () => import('@/components/dialogs/ExportDialog.vue')
+        'export-dialog': () => import('@/components/dialogs/export-dialog.vue')
     },
     computed: {
         canUndo() {

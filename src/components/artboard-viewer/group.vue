@@ -16,34 +16,34 @@
         }">
         <template v-for="(item, i) in definition.items">
             <ViewerGroup v-if="item.type == 'group'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
-            <viewer-image v-if="item.type == 'image'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
             <viewer-line v-if="item.type == 'line'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
             <viewer-oval v-if="item.type == 'oval'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
+            <viewer-raster-image v-if="item.type == 'raster-image'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
             <viewer-rectangle v-if="item.type == 'rectangle'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
             <viewer-text v-if="item.type == 'text'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
-            <viewer-vector-graphic v-if="item.type == 'vector-graphic'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
+            <viewer-vector-image v-if="item.type == 'vector-image'" :key="i" :pid="pid+'.'+i" :definition="item" :z-index="definition.items.length - i" />
         </template>
     </div>
 </template>
 
 <script>
 import store from '@/store';
-import Image from './Image.vue';
-import Line from './Line.vue';
-import Oval from './Oval.vue';
-import Rectangle from './Rectangle.vue';
-import Text from './Text.vue';
-import VectorGraphic from './VectorGraphic.vue';
+import Line from './line.vue';
+import Oval from './oval.vue';
+import RasterImage from './raster-image.vue';
+import Rectangle from './rectangle.vue';
+import Text from './text.vue';
+import VectorImage from './vector-image.vue';
 
 const Group = {
     name: 'ViewerGroup',
     components: {
-        'viewer-image': Image,
         'viewer-line': Line,
         'viewer-oval': Oval,
+        'viewer-raster-image': RasterImage,
         'viewer-rectangle': Rectangle,
         'viewer-text': Text,
-        'viewer-vector-graphic': VectorGraphic
+        'viewer-vector-image': VectorImage
     },
     props: {
         definition: {

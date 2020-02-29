@@ -89,7 +89,7 @@
 <script>
 import store from '@/store';
 import uuid from 'uuid';
-import AccordionSection from './AccordionSection.vue';
+import AccordionSection from './accordion-section.vue';
 
 export default {
     name: 'SettingsPage',

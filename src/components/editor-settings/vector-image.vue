@@ -6,6 +6,6 @@
 
 <script>
 export default {
-    name: 'SettingsVectorGraphic'
+    name: 'SettingsVectorImage'
 };
 </script>

@@ -17,30 +17,30 @@
 
 <script>
 import store from '@/store';
-import EditorArtboard from './editor-settings/Artboard.vue';
-import EditorGroup from './editor-settings/Group.vue';
-import EditorImage from './editor-settings/Image.vue';
-import EditorLine from './editor-settings/Line.vue';
-import EditorMultiselect from './editor-settings/Multiselect.vue';
-import EditorOval from './editor-settings/Oval.vue';
-import EditorPage from './editor-settings/Page.vue';
-import EditorRectangle from './editor-settings/Rectangle.vue';
-import EditorText from './editor-settings/Text.vue';
-import EditorVectorGraphic from './editor-settings/VectorGraphic.vue';
+import EditorArtboard from './editor-settings/artboard.vue';
+import EditorGroup from './editor-settings/group.vue';
+import EditorRasterImage from './editor-settings/raster-image.vue';
+import EditorLine from './editor-settings/line.vue';
+import EditorMultiselect from './editor-settings/multiselect.vue';
+import EditorOval from './editor-settings/oval.vue';
+import EditorPage from './editor-settings/page.vue';
+import EditorRectangle from './editor-settings/rectangle.vue';
+import EditorText from './editor-settings/text.vue';
+import EditorVectorImage from './editor-settings/vector-image.vue';
 
 export default {
     name: 'EditorSettings',
     components: {
         'editor-artboard': EditorArtboard,
         'editor-group': EditorGroup,
-        'editor-image': EditorImage,
+        'editor-raster-image': EditorRasterImage,
         'editor-line': EditorLine,
         'editor-multiselect': EditorMultiselect,
         'editor-oval': EditorOval,
         'editor-page': EditorPage,
         'editor-rectangle': EditorRectangle,
         'editor-text': EditorText,
-        'editor-vector-graphic': EditorVectorGraphic
+        'editor-vector-image': EditorVectorImage
     },
     data() {
         return {

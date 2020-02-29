@@ -9,7 +9,7 @@
 
 <script>
 export default {
-    name: 'ViewerVectorGraphic',
+    name: 'ViewerVectorImage',
     props: {
         pid: {
             type: String,

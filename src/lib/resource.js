@@ -6,7 +6,7 @@ export function loadResourcesToThreeCache() {
     let loadPromises = [];
     for (let i = 0; i < store.state.resources.length; i++) {
         let resourceDef = store.state.resources[i];
-        if (resourceDef.type === 'image') {
+        if (resourceDef.type === 'raster-image') {
             loadPromises.push(new Promise((resolve, reject) => {
                 const image = new Image();
                 image.src = resourceDef.data;
@@ -29,7 +29,7 @@ export function loadFileAsResource(file) {
             image.src = reader.result;
             image.onload = async () => {
                 const resourceId = await store.dispatch('addResource', {
-                    type: 'image',
+                    type: 'raster-image',
                     data: reader.result,
                     meta: {
                         width: image.width,

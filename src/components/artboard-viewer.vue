@@ -59,8 +59,8 @@
 
 <script>
 import store from '@/store';
-import Artboard from './artboard-viewer/Artboard.vue';
-import toolControllerMixin from '@/mixins/toolController.js';
+import Artboard from './artboard-viewer/artboard.vue';
+import toolControllerMixin from '@/mixins/tool-controller.js';
 
 export default {
     name: 'ArtboardViewer',

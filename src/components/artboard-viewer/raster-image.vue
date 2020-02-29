@@ -7,7 +7,7 @@
 import { ClampToEdgeWrapping, DoubleSide, Mesh, MeshBasicMaterial, NearestFilter, PlaneGeometry, TextureLoader } from 'three';
 
 export default {
-    name: 'ImageViewer',
+    name: 'RasterImageViewer',
     props: {
         definition: {
             type: Object,

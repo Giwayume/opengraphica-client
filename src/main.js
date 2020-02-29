@@ -9,7 +9,7 @@ Vue.use(BootstrapVue);
 Vue.use(Vue2TouchEvents);
 Vue.use(VueInputAutowidth);
 
-import App from './App.vue';
+import App from './app.vue';
 import router from './router';
 import store from './store';
 

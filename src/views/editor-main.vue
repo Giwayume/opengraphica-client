@@ -11,7 +11,7 @@
                         <i class="fas" :class="openSidebar === 'left' ? 'fa-times' : 'fa-chevron-right'"></i>
                         <span class="sr-only">Reveal Left Sidebar</span>
                     </div>
-                    <div class="d-flex flex-row h-100">
+                    <div class="d-flex flex-row h-100" style="border-right: 2px solid transparent;">
                         <div class="flex-grow-1 flex-shrink-1 overflow-hidden"> 
                             <page-selector />
                             <page-outline :is-root="true" />
@@ -39,12 +39,12 @@
 </template>
 
 <script>
-import ActionToolbar from '@/components/ActionToolbar.vue';
-import ArtboardViewer from '@/components/ArtboardViewer.vue';
-import PageOutline from '@/components/PageOutline.vue';
-import PageSelector from '@/components/PageSelector.vue';
-import ToolSelector from '@/components/ToolSelector.vue';
-import EditorSettings from '@/components/EditorSettings.vue';
+import ActionToolbar from '@/components/action-toolbar.vue';
+import ArtboardViewer from '@/components/artboard-viewer.vue';
+import PageOutline from '@/components/page-outline.vue';
+import PageSelector from '@/components/page-selector.vue';
+import ToolSelector from '@/components/tool-selector.vue';
+import EditorSettings from '@/components/editor-settings.vue';
 import ResSplitPane from 'vue-resize-split-pane';
 
 export default {

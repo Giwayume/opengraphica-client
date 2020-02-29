@@ -15,7 +15,7 @@
 
 <script>
 import store from '@/store';
-import Canvas from './Canvas.vue';
+import Canvas from './canvas.vue';
 
 export default {
     name: 'ViewerArtboard',

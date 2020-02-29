@@ -58,9 +58,17 @@ const store = new Vuex.Store({
                 title: 'Pan/Rotate View',
                 icon: 'fas fa-arrows-alt'
             },
+            rasterImage: {
+                title: 'Insert Raster Image',
+                icon: 'fas fa-image'
+            },
             select: {
                 title: 'Select/Drag',
                 icon: 'fas fa-mouse-pointer'
+            },
+            text: {
+                title: 'Insert Text',
+                icon: 'fas fa-i-cursor'
             },
             zoom: {
                 title: 'Zoom/Pan',
@@ -70,7 +78,10 @@ const store = new Vuex.Store({
         toolOrder: [
             'select',
             'pan',
-            'zoom'
+            'zoom',
+            'divider',
+            'text',
+            'rasterImage'
         ],
         selectedTool: 'select',
         selectedPage: null, // ID, not index

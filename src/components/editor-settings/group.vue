@@ -221,7 +221,7 @@
 <script>
 import store from '@/store';
 import uuidv4 from 'uuid';
-import AccordionSection from './AccordionSection.vue';
+import AccordionSection from './accordion-section.vue';
 
 export default {
     name: 'SettingsGroup',

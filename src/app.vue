@@ -63,7 +63,7 @@ export default {
                             store.dispatch('addElement', {
                                 definition: {
                                     name: file.name || 'Pasted Image',
-                                    type: 'image',
+                                    type: 'raster-image',
                                     renderMethod: 'raster',
                                     resourceId: resourceDef.id,
                                     position: { x: 0, y: 0 },

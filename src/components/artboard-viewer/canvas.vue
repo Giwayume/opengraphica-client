@@ -24,12 +24,12 @@
 <script>
 import { Color, OrthographicCamera, Scene, WebGLRenderer } from 'three';
 import store from '@/store';
-import ImageViewer from './Image.vue';
+import RasterImageViewer from './raster-image.vue';
 
 export default {
     name: 'ViewerCanvas',
     components: {
-        'image-viewer': ImageViewer
+        'raster-image-viewer': RasterImageViewer
     },
     props: {
         definition: {
