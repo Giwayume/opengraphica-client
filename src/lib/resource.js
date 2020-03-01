@@ -21,10 +21,31 @@ export function loadResourcesToThreeCache() {
     return Promise.all(loadPromises);
 }
 
+export function loadCanvasAsResource(canvas) {
+    return new Promise(async (resolve, reject) => {
+        const dataUrl = canvas.toDataURL();
+        const image = new Image();
+        image.src = dataUrl;
+        image.onload = async () => {
+            const resourceId = await store.dispatch('addResource', {
+                type: 'raster-image',
+                data: canvas.toDataURL(),
+                meta: {
+                    width: canvas.width,
+                    height: canvas.height
+                }
+            });
+            Cache.add('/resources/' + resourceId, image);
+            resolve(store.getters.resourceById(resourceId));
+        };
+        image.onerror = reject;
+    });
+}
+
 export function loadFileAsResource(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.addEventListener("load", async () => {
+        reader.addEventListener('load', async () => {
             const image = new Image();
             image.src = reader.result;
             image.onload = async () => {

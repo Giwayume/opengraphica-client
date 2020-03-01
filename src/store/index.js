@@ -58,8 +58,8 @@ const store = new Vuex.Store({
                 title: 'Pan/Rotate View',
                 icon: 'fas fa-arrows-alt'
             },
-            rasterImage: {
-                title: 'Insert Raster Image',
+            image: {
+                title: 'Insert Image',
                 icon: 'fas fa-image'
             },
             select: {
@@ -80,12 +80,12 @@ const store = new Vuex.Store({
             'pan',
             'zoom',
             'divider',
-            'text',
-            'rasterImage'
+            // 'text',
+            'image'
         ],
         selectedTool: 'select',
-        selectedPage: null, // ID, not index
-        selectedArtboard: null, // ID, not index
+        selectedPage: null, // ID (number), not index
+        selectedArtboard: null, // ID (number), not index
         selectedElements: [],
         skipHomePage: false,
         editingElement: null,
@@ -190,7 +190,7 @@ const store = new Vuex.Store({
                 }
             }
             if (index == null) {
-                index = -1;
+                index = 0;
             }
             const parentDefinition = getElementDefinition(state, state.selectedPage, parent);
             if (parentDefinition) {

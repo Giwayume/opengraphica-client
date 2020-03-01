@@ -15,7 +15,7 @@
     - [ ] Adding Guidelines
     - [ ] Snapping to Guidelines
     - [ ] Zooming with Mousewheel
-    - 
+
 - [ ] Tools
     - [ ] Select/Move
     - [ ] Pan View
@@ -27,10 +27,21 @@
         - [ ] Alt + Click Zoom Out One Level
     - [ ] Add Group
     - [ ] Add Text
+        - [ ] Tap to add with auto width
+        - [ ] Drag to add with specific width
+        - [ ] 
     - [ ] Add Line
     - [ ] Add Rectangle
     - [ ] Add Oval
     - [ ] Add Image
+        - [x] Tap to add
+        - [ ] Drag to size while adding
+        - [ ] Option to add empty image
+        - [ ] Option to set position in add image modal
+        - [ ] Option to set size in add image modal (and fill artboard size)
+        - [ ] Deconstruct SVGs
+        - [ ] Convert to PNG
+        - [ ] File select text wrapping
     - [ ] Add Vector
 - [ ] Artboard Outline
     - [x] Deleting

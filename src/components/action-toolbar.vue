@@ -13,13 +13,15 @@
                         <span class="sr-only">Insert</span>
                     </i>
                 </template>
+                <!--
                 <b-dropdown-item href="#"><i class="fas fa-folder-open mr-2 text-center" style="width: 1.2rem"></i>Group</b-dropdown-item>
                 <b-dropdown-item href="#"><i class="fas fa-font mr-2 text-center" style="width: 1.2rem"></i>Text</b-dropdown-item>
                 <b-dropdown-item href="#"><i class="fas fa-long-arrow-alt-right mr-2 text-center" style="width: 1.2rem"></i>Line</b-dropdown-item>
                 <b-dropdown-item href="#"><i class="far fa-square mr-2 text-center" style="width: 1.2rem"></i>Rectangle</b-dropdown-item>
-                <b-dropdown-item href="#"><i class="far fa-circle mr-2 text-center" style="width: 1.2rem"></i>Oval</b-dropdown-item>
-                <b-dropdown-item href="#"><i class="far fa-image mr-2 text-center" style="width: 1.2rem"></i>Image</b-dropdown-item>
+                <b-dropdown-item href="#"><i class="far fa-circle mr-2 text-center" style="width: 1.2rem"></i>Oval</b-dropdown-item>                
                 <b-dropdown-item href="#"><i class="fas fa-vector-square mr-2 text-center" style="width: 1.2rem"></i>Vector Graphic</b-dropdown-item>
+                -->
+                <b-dropdown-item href="#" @click="onClickInsertImage()"><i class="far fa-image mr-2 text-center" style="width: 1.2rem"></i>Image</b-dropdown-item>
             </b-dropdown>
             <b-button v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Delete"
                 variant="dark-medium" class="mx-1" style="min-width: 3.5rem" @click="onClickDelete">
@@ -105,30 +107,15 @@
                 </i>
             </b-button>
         </div>
-        <b-modal
-            title="Export"
-            header-bg-variant="dark"
-            header-text-variant="white"
-            body-bg-variant="dark"
-            body-text-variant="white"
-            footer-bg-variant="dark"
-            footer-text-variant="white"
-            centered
-            hide-footer
-            v-model="showExportDialog">
-            <component :is="'export-dialog'" @export-complete="showExportDialog = false;" />
-        </b-modal>
     </div>
 </template>
 
 <script>
 import store from '@/store';
+import { openDialog } from '@/lib/dialog';
 
 export default {
     name: 'ActionToolbar',
-    components: {
-        'export-dialog': () => import('@/components/dialogs/export-dialog.vue')
-    },
     computed: {
         canUndo() {
             return true;
@@ -181,7 +168,6 @@ export default {
     },
     data() {
         return {
-            showExportDialog: false,
             zoomLevelIsFocused: false,
             zoomLevels: []
         };
@@ -248,7 +234,10 @@ export default {
             }
         },
         onClickExport() {
-            this.showExportDialog = true;
+            openDialog('export');
+        },
+        onClickInsertImage() {
+            openDialog('insert-image');
         },
         onClickUndo() {
             store.dispatch('undoHistory');

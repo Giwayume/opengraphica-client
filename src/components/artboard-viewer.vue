@@ -1,12 +1,11 @@
 <template>
     <div
+        id="artboard-viewer"
         class="position-relative w-100 h-100 user-select-none"
         :class="artboards && artboards.length > 0 ? 'viewer-current-tool-' + selectedTool : ''"
-        v-touch:start="onTouchStartViewer"
         v-touch:tap="onTouchTapViewer"
         v-touch:moved="onTouchMovedViewer"
-        v-touch:moving="onTouchMovingViewer"
-        v-touch:end="onTouchEndViewer">
+        v-touch:moving="onTouchMovingViewer">
         <div class="d-flex flex-row w-100 h-100 overflow-hidden align-items-center justify-content-center" style="contain: content">
             <div
                 v-if="artboards && artboards.length > 0"
@@ -221,9 +220,6 @@ export default {
             }
             this.$refs.clickTrap.focus();
         },
-        onTouchStartViewer(e) {
-            this.$onTouchStartTool(e);
-        },
         onTouchTapViewer(e) {
             this.$onTouchTapTool(e);
         },
@@ -232,9 +228,6 @@ export default {
         },
         onTouchMovingViewer(e) {
             this.$onTouchMovingTool(e);
-        },
-        onTouchEndViewer(e) {
-            this.$onTouchEndTool(e);
         },
         positionEditingElement(newElement) {
             /*
@@ -365,6 +358,12 @@ export default {
 }
 .viewer-current-tool-zoom-alt {
     cursor: zoom-out;
+}
+.viewer-current-tool-text {
+    cursor: text;
+}
+.viewer-current-tool-rasterImage {
+    cursor: cell;
 }
 .selected-element-outline {
     animation: selected-element-outline 1.5s infinite;

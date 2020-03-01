@@ -33,11 +33,7 @@ export default {
             
         }
     },
-    data() {
-        return {
-            mesh: null
-        };
-    },
+    mesh: null,
     created() {
         const imageResource = this.$store.getters.resourceById(this.definition.resourceId);
         if (!imageResource.material) {

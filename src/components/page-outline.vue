@@ -34,7 +34,7 @@
                     @mousedown="onMouseDownSelectionButton($event, i)">
                     <i class="text-center" :class="{
                         'fas fa-chalkboard': item.type == 'artboard',
-                        'fas fa-image': item.type == 'image',
+                        'fas fa-image': item.type == 'raster-image',
                         'fas fa-folder-open': item.expanded && item.type == 'group',
                         'fas fa-folder': !item.expanded && item.type == 'group',
                         'fas fa-font': item.type == 'text',

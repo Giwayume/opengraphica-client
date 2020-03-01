@@ -1,7 +1,7 @@
 <template>
     <div class="form" v-if="settings">
         <div class="bg-dark-medium px-3 py-2">
-            <strong>Image Settings</strong>
+            <strong>Raster Image Settings</strong>
         </div>
         <div class="px-3 pt-3 pb-2">
             <b-form-row>

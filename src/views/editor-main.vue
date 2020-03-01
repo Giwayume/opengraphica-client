@@ -1,5 +1,5 @@
 <template>
-    <section aria-label="OpenGraphica Editor" class="d-flex flex-column">
+    <section aria-label="OpenGraphica Editor" class="d-flex flex-column" v-touch:start="onTouchStartApp" v-touch:end="onTouchEndApp">
         <div class="flex-grow-0 flex-shrink-1 app-header text-white d-flex flex-row justify-content-between">
             <action-toolbar />
         </div>
@@ -46,9 +46,13 @@ import PageSelector from '@/components/page-selector.vue';
 import ToolSelector from '@/components/tool-selector.vue';
 import EditorSettings from '@/components/editor-settings.vue';
 import ResSplitPane from 'vue-resize-split-pane';
+import toolControllerMixin from '@/mixins/tool-controller.js';
 
 export default {
     name: 'home',
+    mixins: [
+        toolControllerMixin
+    ],
     components: {
         'action-toolbar': ActionToolbar,
         'artboard-viewer': ArtboardViewer,
@@ -89,6 +93,12 @@ export default {
     methods: {
         onOpenSidebar(sidebar) {
             this.openSidebar = (this.openSidebar === sidebar) ? null : sidebar;
+        },
+        onTouchEndApp(e) {
+            this.$onTouchEndTool(e);
+        },
+        onTouchStartApp(e) {
+            this.$onTouchStartTool(e);
         },
         onUpdatePaneSize(side, size) {
             if (this.sidebarMode === 'panes') {

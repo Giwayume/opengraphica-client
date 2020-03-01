@@ -87,8 +87,8 @@
                     </div>
                 </div>
             </b-form-group>
-            <b-button type="button" block variant="secondary" @click="onExport('copy')"><i class="fa fa-copy mr-2"/>Copy to Clipboard</b-button>
-            <b-button type="submit" block variant="primary"><i class="fa fa-file-export mr-2"/>Export</b-button>
+            <b-button type="button" block variant="secondary" class="btn-dialog" @click="onExport('copy')"><i class="fa fa-copy mr-2"/>Copy to Clipboard</b-button>
+            <b-button type="submit" block variant="primary" class="btn-dialog"><i class="fa fa-file-export mr-2"/>Export</b-button>
         </template>
     </b-form>
 </template>
@@ -98,6 +98,7 @@ import store from '@/store';
 
 export default {
     name: 'ExportDialog',
+    title: 'Export',
     computed: {
         exportMimeType() {
             switch (this.fileContainer) {
@@ -192,7 +193,7 @@ export default {
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                        this.$emit('export-complete');
+                        this.$emit('dismiss');
                     } else if (exportType === 'copy') {
                         try {
                             const blob = new Blob([this.base64ToArrayBuffer(imageDataUrl.split(',')[1])], { type: 'image/png' });
@@ -201,7 +202,7 @@ export default {
                                     'image/png': blob
                                 })
                             ]);
-                            this.$emit('export-complete', 'copy');
+                            this.$emit('dismiss');
                             setTimeout(() => {
                                 this.$bvToast.toast('Image was copied to the clipboard!', { title: 'Copied', variant: 'success', autoHideDelay: 3000 });
                             }, 300);

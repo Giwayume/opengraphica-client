@@ -10,6 +10,7 @@
 import store from './store';
 import io from '@/lib/io';
 import * as resource from '@/lib/resource';
+import * as addElement from '@/lib/add-element';
 
 export default {
     data() {
@@ -27,50 +28,33 @@ export default {
     },
     methods: {
         initialRoute() {
+            // Jump straight to edit page if home already visited.
             if (this.$route.path === '/' && this.$store.state.skipHomePage) {
                 this.$router.replace({ name: 'editor-main' });
             }
         },
         setupGlobalListeners() {
+            // Stop iOS pinch zoom.
             document.addEventListener('touchmove', function (event) {
                 if (event.scale !== 1) { event.preventDefault(); }
             }, false);
+            // Notify window resize.
             window.addEventListener('resize', (e) => {
                 store.dispatch('setWindowSize', { width: window.innerWidth, height: window.innerHeight });
                 this.$root.$emit('resize', e);
             });
+            // Handle pasting images.
             window.addEventListener('paste', async (e) => {
                 if (e.clipboardData) {
                     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
                     for (let item of items) {
                         if (item.kind === 'file') {
                             const file = item.getAsFile();
-                            const resourceDef = await resource.loadFileAsResource(file);
-                            if (store.state.pages.length === 0) {
-                                await store.dispatch('addPage', {
-                                    artboardWidth: resourceDef.meta.width,
-                                    artboardHeight: resourceDef.meta.height
-                                });
-                                await store.dispatch('editFirstArtboard');
+                            if (addElement.isRasterImageMimeType(file.type)) {
+                                await addElement.addRasterImage({ file, source: 'clipboard' });
+                            } else if (addElement.isVectorImageMimeType(file.type)) {
+                                // TODO
                             }
-                            else if (store.state.editingElement == null) {
-                                await store.dispatch('addArtboard', {
-                                    width: resourceDef.meta.width,
-                                    height: resourceDef.meta.height
-                                });
-                                await store.dispatch('editLastArtboard');
-                            }
-                            store.dispatch('addElement', {
-                                definition: {
-                                    name: file.name || 'Pasted Image',
-                                    type: 'raster-image',
-                                    renderMethod: 'raster',
-                                    resourceId: resourceDef.id,
-                                    position: { x: 0, y: 0 },
-                                    dimensions: { w: resourceDef.meta.width, h: resourceDef.meta.height }
-                                },
-                                parent: store.state.editingElement
-                            });
                         }
                     }
                 }
