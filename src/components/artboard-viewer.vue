@@ -362,7 +362,7 @@ export default {
 .viewer-current-tool-text {
     cursor: text;
 }
-.viewer-current-tool-rasterImage {
+.viewer-current-tool-image {
     cursor: cell;
 }
 .selected-element-outline {

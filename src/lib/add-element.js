@@ -47,7 +47,6 @@ export async function addRasterImage(options) {
         await store.dispatch('editFirstArtboard');
     }
     else if (store.state.editingElement == null) {
-        console.log('hur');
         if (options.source !== 'touch') {
             await store.dispatch('addArtboard', {
                 width: resourceDef.meta.width,

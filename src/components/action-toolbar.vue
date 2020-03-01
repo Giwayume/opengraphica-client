@@ -101,7 +101,7 @@
                 <b-dropdown-item href="#"><i class="far fa-save mr-2 text-center" style="width: 1.2rem"></i>Save As</b-dropdown-item>
                 <b-dropdown-item href="#" @click="onClickExport()"><i class="fas fa-file-export mr-2 text-center" style="width: 1.2rem"></i>Export</b-dropdown-item>
             </b-dropdown>
-            <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Menu">
+            <b-button variant="dark-medium" class="mx-1" style="min-width: 3.5rem" v-b-tooltip.hover="{ boundary: 'viewport', delay: { show: 400 } }" title="Menu" @click="onClickMenu">
                 <i class="fas fa-cog">
                     <span class="sr-only">Menu</span>
                 </i>
@@ -180,6 +180,9 @@ export default {
         this.$root.$on('io::keydown::export', () => {
             this.onClickExport();
         });
+        this.$root.$on('io::keydown::menu', () => {
+            this.onClickMenu();
+        });
         this.$root.$on('io::keydown::redo', () => {
             this.onClickRedo();
         });
@@ -200,6 +203,7 @@ export default {
         this.$root.$off([
             'io::keydown::delete',
             'io::keydown::export',
+            'io::keydown::menu',
             'io::keydown::redo',
             'io::keydown::undo',
             'io::keydown::zoom_default',
@@ -238,6 +242,9 @@ export default {
         },
         onClickInsertImage() {
             openDialog('insert-image');
+        },
+        onClickMenu() {
+            openDialog('menu');
         },
         onClickUndo() {
             store.dispatch('undoHistory');

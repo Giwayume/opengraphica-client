@@ -39,6 +39,7 @@ function getArtboardPosition(e, clientX, clientY) {
         const canvasClientRect = canvas.getBoundingClientRect();
         x = Math.floor((clientX - canvasClientRect.left) / store.state.canvas.zoom);
         y = Math.floor((clientY - canvasClientRect.top) / store.state.canvas.zoom);
+        artboardId = parseInt(canvas.getAttribute('data-artboard-id'), 10);
     }
     return { x, y, artboardId };
 }

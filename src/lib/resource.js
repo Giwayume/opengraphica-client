@@ -25,12 +25,17 @@ export function loadCanvasAsResource(canvas) {
     return new Promise(async (resolve, reject) => {
         const dataUrl = canvas.toDataURL();
         const image = new Image();
+        const timestamp = new Date().getTime();
         image.src = dataUrl;
         image.onload = async () => {
             const resourceId = await store.dispatch('addResource', {
                 type: 'raster-image',
                 data: canvas.toDataURL(),
+                thumbnailData: null,
                 meta: {
+                    lastModifiedTimestamp: timestamp,
+                    lastThumbnailGenerationTimestamp: timestamp,
+                    name: 'New Image #' + store.state.resourceIdCounter + 1,
                     width: canvas.width,
                     height: canvas.height
                 }
@@ -47,12 +52,17 @@ export function loadFileAsResource(file) {
         const reader = new FileReader();
         reader.addEventListener('load', async () => {
             const image = new Image();
+            const timestamp = new Date().getTime();
             image.src = reader.result;
             image.onload = async () => {
                 const resourceId = await store.dispatch('addResource', {
                     type: 'raster-image',
                     data: reader.result,
+                    thumbnailData: null,
                     meta: {
+                        lastModifiedTimestamp: timestamp,
+                        lastThumbnailGenerationTimestamp: timestamp,
+                        name: file.name,
                         width: image.width,
                         height: image.height
                     }

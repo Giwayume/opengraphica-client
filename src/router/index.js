@@ -7,12 +7,12 @@ const routes = [
     {
         path: '/',
         name: 'home',
-        component: () => import(/* webpackChunkName: "home" */ '../views/home.vue')
+        component: () => import(/* webpackChunkName: 'home' */ '../views/home.vue')
     },
 	{
 		path: '/edit',
 		name: 'editor-main',
-		component: () => import(/* webpackChunkName: "editor-main" */ '../views/editor-main.vue')
+		component: () => import(/* webpackChunkName: 'editor-main' */ '../views/editor-main.vue')
     }
 ];
 

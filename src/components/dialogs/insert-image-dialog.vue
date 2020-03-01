@@ -34,6 +34,10 @@ export default {
             type: Boolean,
             default: false
         },
+        parentPid: {
+            type: String,
+            default: undefined
+        },
         source: {
             type: String,
             default: ''
@@ -63,6 +67,7 @@ export default {
                         artboardX: this.artboardX,
                         artboardY: this.artboardY,
                         centerPlacement: this.centerPlacement,
+                        parentPid: this.parentPid,
                         source: this.source
                     });
                     this.$emit('dismiss');

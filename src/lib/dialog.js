@@ -3,8 +3,9 @@ import Vue from 'vue';
 export async function openDialog(name, props) {
     let dialogComponentModule;
     switch(name) {
-        case 'export': dialogComponentModule = await import(/* webpackChunkName: export-dialog */ '@/components/dialogs/export-dialog'); break;
-        case 'insert-image': dialogComponentModule = await import(/* webpackChunkName: insert-image-dialog */ '@/components/dialogs/insert-image-dialog'); break;
+        case 'export': dialogComponentModule = await import(/* webpackChunkName: 'export-dialog' */ '@/components/dialogs/export-dialog'); break;
+        case 'insert-image': dialogComponentModule = await import(/* webpackChunkName: 'insert-image-dialog' */ '@/components/dialogs/insert-image-dialog'); break;
+        case 'menu': dialogComponentModule = await import(/* webpackChunkName: 'menu-dialog' */ '@/components/dialogs/menu-dialog'); break;
         default: break;
     }
     if (!dialogComponentModule) {

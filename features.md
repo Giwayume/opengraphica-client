@@ -37,6 +37,7 @@
         - [x] Tap to add
         - [ ] Drag to size while adding
         - [ ] Option to add empty image
+        - [ ] Option to select image from existing resources
         - [ ] Option to set position in add image modal
         - [ ] Option to set size in add image modal (and fill artboard size)
         - [ ] Deconstruct SVGs

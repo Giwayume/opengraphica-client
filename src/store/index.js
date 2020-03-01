@@ -291,7 +291,6 @@ const store = new Vuex.Store({
             state.recordHistory = recordHistory;
         },
         setEditingElement(state, editingElement) {
-            console.log(editingElement);
             if (editingElement) {
                 const selectedArtboardIndex = parseInt((editingElement || '').split('.')[0], 10) || 0;
                 state.selectedArtboard = state.pages.filter((page) => page.id === state.selectedPage)[0].outline[selectedArtboardIndex].id;

@@ -23,6 +23,9 @@ const eventKeyMap = {
     export: {
         keys: 'ctrl e'
     },
+    menu: {
+        keys: ['ctrl shift m', 'shift ctrl m']
+    },
     page_outline_pick_select_modifier: {
         keys: 'ctrl',
         is_solitary: false,
