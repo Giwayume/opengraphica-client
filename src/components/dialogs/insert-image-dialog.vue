@@ -33,6 +33,10 @@ export default {
         centerPlacement: {
             type: Boolean,
             default: false
+        },
+        source: {
+            type: String,
+            default: ''
         }
     },
     computed: {
@@ -54,7 +58,13 @@ export default {
             }
             try {
                 if (addElement.isRasterImageMimeType(this.file.type)) {
-                    await addElement.addRasterImage({ file: this.file, artboardX: this.artboardX, artboardY: this.artboardY, centerPlacement: this.centerPlacement });
+                    await addElement.addRasterImage({
+                        file: this.file,
+                        artboardX: this.artboardX,
+                        artboardY: this.artboardY,
+                        centerPlacement: this.centerPlacement,
+                        source: this.source
+                    });
                     this.$emit('dismiss');
                 } else if (addElement.isVectorImageMimeType(this.file.type)) {
                     // TODO
@@ -63,6 +73,7 @@ export default {
                     alert('This image format is not supported. Supported types are jpeg, png, gif, webp, and svg.');
                 }
             } catch (error) {
+                console.warn(error);
                 alert('There was an error reading your file.');
             }
         }

@@ -5,6 +5,7 @@ import { touchState } from './common';
 const events = {
     onTouchTap(context, e) {
         openDialog('insert-image', {
+            source: 'touch',
             artboardX: touchState.touchDownArtboardPosition.x,
             artboardY: touchState.touchDownArtboardPosition.y,
             centerPlacement: true

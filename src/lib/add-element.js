@@ -47,11 +47,14 @@ export async function addRasterImage(options) {
         await store.dispatch('editFirstArtboard');
     }
     else if (store.state.editingElement == null) {
-        await store.dispatch('addArtboard', {
-            width: resourceDef.meta.width,
-            height: resourceDef.meta.height
-        });
-        await store.dispatch('editLastArtboard');
+        console.log('hur');
+        if (options.source !== 'touch') {
+            await store.dispatch('addArtboard', {
+                width: resourceDef.meta.width,
+                height: resourceDef.meta.height
+            });
+            await store.dispatch('editLastArtboard');
+        }
     }
 
     const parentPid = options.parentPid || store.state.editingElement;

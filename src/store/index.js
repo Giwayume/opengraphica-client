@@ -291,6 +291,7 @@ const store = new Vuex.Store({
             state.recordHistory = recordHistory;
         },
         setEditingElement(state, editingElement) {
+            console.log(editingElement);
             if (editingElement) {
                 const selectedArtboardIndex = parseInt((editingElement || '').split('.')[0], 10) || 0;
                 state.selectedArtboard = state.pages.filter((page) => page.id === state.selectedPage)[0].outline[selectedArtboardIndex].id;
@@ -310,7 +311,7 @@ const store = new Vuex.Store({
         setSelectedArtboard(state, selectedArtboard) {
             state.selectedArtboard = selectedArtboard;
             const elementIndex = state.pages.filter((page) => page.id === state.selectedPage)[0].outline.findIndex((artboard) => artboard.id === selectedArtboard);
-            state.editingElement = '' + elementIndex;
+            state.editingElement = elementIndex > -1 ? '' + elementIndex : null;
         },
         setSelectedElements(state, selectedElements) {
             if (selectedElements.toString() !== state.selectedElements.toString()) {
@@ -408,7 +409,7 @@ const store = new Vuex.Store({
         editLastArtboard({ dispatch, getters, state }) {
             if (state.selectedPage != null) {
                 const outline = getters.pageDefinition(state.selectedPage).outline;
-                dispatch('setEditingElement', (outline.length - 1) + '');
+                dispatch('setEditingElement', outline.length > 0 ? (outline.length - 1) + '' : null);
             }
         },
         async loadStorage({ dispatch }) {
