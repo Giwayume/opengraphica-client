@@ -1,5 +1,6 @@
 <template>
-    <div :style="{
+    <div data-artboard-canvas-viewer
+        :style="{
             contain: 'strict',
             height: height,
             width: width
@@ -22,7 +23,7 @@
 </template>
 
 <script>
-import { Color, OrthographicCamera, Scene, WebGLRenderer } from 'three';
+import { Color, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import store from '@/store';
 import RasterImageViewer from './raster-image.vue';
 
@@ -31,6 +32,7 @@ export default {
     components: {
         'raster-image-viewer': RasterImageViewer
     },
+    foo: 'bar',
     props: {
         definition: {
             type: Object,
@@ -43,10 +45,7 @@ export default {
     },
     data() {
         return {
-            camera: null,
-            drawFlag: false,
-            renderer: null,
-            scene: null
+            drawFlag: false
         };
     },
     computed: {
@@ -77,10 +76,10 @@ export default {
     created() {
         const canvasWidth = this.definition.dimensions.w;
         const canvasHeight = this.definition.dimensions.h;
-        this.camera = new OrthographicCamera(0, canvasWidth, 0, canvasHeight, 0.00001, 10);
-        this.camera.position.x = 0;
-        this.camera.position.y = 0;
-        this.camera.position.z = 1;
+        this.camera = new OrthographicCamera(-canvasWidth/2, canvasWidth/2, -canvasHeight/2, canvasHeight/2, 0.00001, 10);
+        this.camera.position.x = canvasWidth/2;
+        this.camera.position.y = canvasHeight/2;
+        this.camera.position.z = 0.0001;
         this.scene = new Scene();
         this.scene.background = new Color(0xffffff);
         this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });

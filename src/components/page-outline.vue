@@ -144,7 +144,7 @@ export default {
         }
     },
     destroyed() {
-        this.$root.$on('store::mutation::addSelectedElement', this.handleAddSelectedElement);
+        this.$root.$off('store::mutation::addSelectedElement', this.handleAddSelectedElement);
         this.$root.$off('store::mutation::removeSelectedElement', this.handleRemoveSelectedElement);
         this.$root.$off('store::mutation::setSelectedElements', this.handleSetSelectedElement);
     },

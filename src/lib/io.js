@@ -17,6 +17,12 @@ const io = {
 };
 
 const eventKeyMap = {
+    artboard_pick_select_modifier: {
+        keys: 'ctrl',
+        is_solitary: false,
+        is_exclusive: false,
+        prevent_default: false
+    },
     delete: {
         keys: 'delete'
     },

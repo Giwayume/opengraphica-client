@@ -141,7 +141,13 @@ export default {
         };
     },
     watch: {
-        definition() {
+        'definition.dimensions'() {
+            this.duplicateSettings();
+        },
+        'definition.name'() {
+            this.duplicateSettings();
+        },
+        'definition.position'() {
             this.duplicateSettings();
         }
     },

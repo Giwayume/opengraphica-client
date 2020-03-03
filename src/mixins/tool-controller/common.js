@@ -1,8 +1,10 @@
 import store from '@/store';
 
 const touchState = {
+    isDoubleTap: false,
     isTouchDown: false,
     isTouchDownArtboards: false,
+    lastTapTimestamp: 0,
     touchDownPan: { x: 0, y: 0 },
     touchDownZoom: 1,
     touchDownZoomDistance: 0,

@@ -16,7 +16,7 @@
                     transform: 'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomLevel + ')',
                     'transform-origin': 'top left'
                 }">
-                <artboard v-for="(artboard, i) in artboards" :key="artboard.id" :pid="i + ''" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
+                <artboard v-for="(artboard, i) in artboards" ref="artboards" :key="artboard.id" :pid="i + ''" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
             </div>
             <p v-else class="text-center">
                 <template v-if="pages.length > 0">
@@ -60,6 +60,7 @@
 import store from '@/store';
 import Artboard from './artboard-viewer/artboard.vue';
 import toolControllerMixin from '@/mixins/tool-controller.js';
+import { viewerPidToComponentMap } from '@/lib/viewer';
 
 export default {
     name: 'ArtboardViewer',
@@ -126,10 +127,16 @@ export default {
         this.scrollIntoView('0');
         this.$root.$on('artboardViewer::scrollIntoView', this.scrollIntoView);
         this.$root.$on('store::mutation::addPage', this.scrollIntoView);
+        this.$root.$on('store::mutation::addSelectedElement', this.handleAddSelectedElement);
+        this.$root.$on('store::mutation::removeSelectedElement', this.handleRemoveSelectedElement);
+        this.$root.$on('store::mutation::setSelectedElements', this.handleSetSelectedElement);
     },
     destroyed() {
         this.$root.$off('artboardViewer::scrollIntoView', this.scrollIntoView);
         this.$root.$off('store::mutation::addPage', this.scrollIntoView);
+        this.$root.$off('store::mutation::addSelectedElement', this.handleAddSelectedElement);
+        this.$root.$off('store::mutation::removeSelectedElement', this.handleRemoveSelectedElement);
+        this.$root.$off('store::mutation::setSelectedElements', this.handleSetSelectedElement);
     },
     methods: {
         calcElementRootPositionByKey(pid) {
@@ -162,6 +169,13 @@ export default {
                 x, y, w, h
             };
         },
+        drawArtboards() {
+            if (this.$refs.artboards) {
+                for (let i = 0; i < this.$refs.artboards.length; i++) {
+                    this.$refs.artboards[i].draw();
+                }
+            }
+        },
         getPidUnderMouse(e) {
             const clickedElements = [].slice.call(document.elementsFromPoint(e.pageX, e.pageY));
             const scopeIdPrefix = (this.editingElement || '');
@@ -190,6 +204,35 @@ export default {
             a1= A[0], a2= A[A.length-1], L= a1.length, i= 0;
             while (i<L && a1.charAt(i)=== a2.charAt(i)) i++;
             return a1.substring(0, i);
+        },
+        handleAddSelectedElement(selectedElement) {
+            const component = viewerPidToComponentMap.get(selectedElement);
+            if (component) {
+                component.addSelection();
+            }
+            this.drawArtboards();
+        },
+        handleRemoveSelectedElement(selectedElement) {
+            const component = viewerPidToComponentMap.get(selectedElement);
+            if (component) {
+                component.removeSelection();
+            }
+            this.drawArtboards();
+        },
+        handleSetSelectedElement(newElements, oldElements) {
+            for (let i = 0; i < oldElements.length; i++) {
+                const component = viewerPidToComponentMap.get(oldElements[i]);
+                if (component) {
+                    component.removeSelection();
+                }
+            }
+            for (let i = 0; i < newElements.length; i++) {
+                const component = viewerPidToComponentMap.get(newElements[i]);
+                if (component) {
+                    component.addSelection();
+                }
+            }
+            this.drawArtboards();
         },
         onClickAddArtboard() {
             this.$store.dispatch('addArtboard');

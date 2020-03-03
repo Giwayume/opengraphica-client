@@ -3,6 +3,9 @@ import { openDialog } from '@/lib/dialog';
 import { touchState } from './common';
 
 const events = {
+    onTouchStart(context, e) {
+
+    },
     onTouchTap(context, e) {
         const parentPid = touchState.touchDownArtboardPosition.artboardId !== store.state.selectedArtboard ? touchState.touchDownArtboardPosition.artboardId + '' : undefined;
         openDialog('insert-image', {

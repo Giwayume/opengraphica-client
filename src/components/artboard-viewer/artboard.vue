@@ -1,5 +1,5 @@
 <template>
-    <div :data-pid="0"
+    <div :data-pid="pid"
         :style="{
             'background-color': backgroundColor,
             height: height,
@@ -9,7 +9,7 @@
             width: width
         }">
         <div class="text-light" style="position: absolute; top: -25px">{{ definition.name }}</div>
-        <viewer-canvas :definition="definition" :pid="pid" />
+        <viewer-canvas ref="canvas" :definition="definition" :pid="pid" />
     </div>
 </template>
 
@@ -87,6 +87,13 @@ export default {
         },
         zoomLevel() {
             return store.state.canvas.zoom;
+        }
+    },
+    methods: {
+        draw() {
+            if (this.$refs.canvas) {
+                this.$refs.canvas.draw();
+            }
         }
     }
 };

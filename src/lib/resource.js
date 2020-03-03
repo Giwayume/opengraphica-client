@@ -32,6 +32,7 @@ export function loadCanvasAsResource(canvas) {
                 type: 'raster-image',
                 data: canvas.toDataURL(),
                 thumbnailData: null,
+                material: null,
                 meta: {
                     lastModifiedTimestamp: timestamp,
                     lastThumbnailGenerationTimestamp: timestamp,
@@ -59,6 +60,7 @@ export function loadFileAsResource(file) {
                     type: 'raster-image',
                     data: reader.result,
                     thumbnailData: null,
+                    material: null,
                     meta: {
                         lastModifiedTimestamp: timestamp,
                         lastThumbnailGenerationTimestamp: timestamp,

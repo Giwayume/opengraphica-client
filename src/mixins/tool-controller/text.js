@@ -1,4 +1,7 @@
 const events = {
+    onTouchStart(context, e) {
+
+    },
     onTouchTap(context, e) {
 
     },

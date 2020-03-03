@@ -3,6 +3,9 @@ import { getAveragePosition, touchState } from './common';
 
 let panningStoreUpdateHandle;
 const events = {
+    onTouchStart(context, e) {
+
+    },
     onTouchTap(context, e) {
 
     },

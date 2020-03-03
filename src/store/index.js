@@ -15,7 +15,7 @@ const getElementDefinition = function(state, pageId, elementKey) {
     if (!elementKey) return null;
     const accessors = elementKey.split('.');
     const page = state.pages.filter((page) => page.id == pageId)[0];
-    let currentElement
+    let currentElement;
     if (page) {
         const artboard = page.outline[accessors[0]];
         currentElement = artboard;
@@ -88,7 +88,7 @@ const store = new Vuex.Store({
         selectedArtboard: null, // ID (number), not index
         selectedElements: [],
         skipHomePage: false,
-        editingElement: null,
+        editingElement: null, // PID path
         pageIdCounter: 0,
         pages: [
             /*{
@@ -428,11 +428,14 @@ const store = new Vuex.Store({
             commit('setCanvasZoom', zoom);
         },
         setEditingElement({ commit, state }, editingElement) {
-            commit('setEditingElement', editingElement);
             let selectedElements = state.selectedElements.slice();
             if (selectedElements == null) {
                 selectedElements = [];
             }
+            if (selectedElements.length === 0) {
+                selectedElements.push(editingElement);
+            }
+            /*
             let hasEncounteredEditingElement = false;
             for (let i = selectedElements.length - 1; i >= 0; i--) {
                 const selectedElementArtboard = parseInt((selectedElements[i] || '').split('.')[0], 10) || 0;
@@ -446,7 +449,9 @@ const store = new Vuex.Store({
             if (editingElement && !hasEncounteredEditingElement) {
                 selectedElements.push(editingElement);
             }
+            */
             commit('setSelectedElements', selectedElements);
+            commit('setEditingElement', editingElement);
         },
         setRecordHistory({ commit }, recordHistory) {
             commit('setRecordHistory', recordHistory);
@@ -464,6 +469,7 @@ const store = new Vuex.Store({
             }
         },
         setSelectedElements({ dispatch, commit, state }, selectedElements) {
+            const oldSelectedElements = [...state.selectedElements];
             commit('setSelectedElements', selectedElements);
             if (selectedElements.length > 0) {
                 const artboardIndex = parseInt((selectedElements[0] || '').split('.')[0], 10) || 0;
@@ -473,6 +479,9 @@ const store = new Vuex.Store({
                     dispatch('setEditingElement', null);
                 }
             } else {
+                // If there are no selected elements, the editing element must be selected.
+                // Otherwise, no editing element.
+                dispatch('setEditingElement', null);
                 dispatch('setSelectedArtboard', null);
             }
         },

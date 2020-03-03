@@ -6,6 +6,8 @@ import selectEvents from './tool-controller/select';
 import textEvents from './tool-controller/text';
 import zoomEvents from './tool-controller/zoom';
 
+const doubleTapTime = 300;
+
 const events = {
     pan: panEvents,
     image: imageEvents,
@@ -43,12 +45,21 @@ export default {
                 }
                 touchState.touchDownAveragePosition = getAveragePosition(e);
                 touchState.touchDownArtboardPosition = getArtboardPosition(e, touchState.touchDownAveragePosition.x, touchState.touchDownAveragePosition.y);
+
+                if (touchState.isTouchDownArtboards) {
+                    events[this.selectedTool].onTouchStart(this, e);
+                }
             }
         },
         $onTouchTapTool(e) {
+            if (window.performance.now() - touchState.lastTapTimestamp < doubleTapTime) {
+                touchState.isDoubleTap = true;
+            }
             if (touchState.isTouchDownArtboards) {
                 events[this.selectedTool].onTouchTap(this, e);
             }
+            touchState.isDoubleTap = false;
+            touchState.lastTapTimestamp = window.performance.now();
         },
         $onTouchMovedTool(e) {
             if (touchState.isTouchDownArtboards) {
