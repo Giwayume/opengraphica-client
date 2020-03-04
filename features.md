@@ -1,7 +1,7 @@
 - [ ] File Export
-    - [ ] PNG
-    - [ ] WEBP
-    - [ ] JPG
+    - [X] PNG
+    - [X] WEBP
+    - [X] JPG
     - [ ] GIF
     - [ ] MKV
     - [ ] MP4
@@ -11,20 +11,42 @@
     - [ ] MPG
     - [ ] Native application select directory (instead of download)
     - [ ] Retain settings for next export
+    - [ ] Remove all selection before rendering image for export
+
 - [ ] Artboard Rendering
     - [ ] Adding Guidelines
     - [ ] Snapping to Guidelines
     - [ ] Zooming with Mousewheel
+    - [ ] Raster Image
+        - [ ] Resize width/height
+
+- [ ] Functions
+    - [ ] Delete
+        - [ ] Select parent or sibling element
+    - [ ] Undo/Redo
+        - [ ] Find generic solution that works
 
 - [ ] Tools
     - [ ] Select/Move
+        - [X] Click to select
+        - [X] Double-click to edit
+        - [X] Ctrl + click to multi-select
+        - [ ] Move all selected instead of just the last element selected when dragging.
+        - [ ] Snap based on nearby elements
+        - [ ] Snap based on guidelines
+        - [ ] Snap based on grid
+        - [ ] Remove selection outline when using other tools
+        - [X] Resize artboards
+        - [ ] Resize images
+        - [ ] Resize text boundaries
     - [ ] Pan View
-        - [ ] With Cursor
+        - [X] With Cursor
         - [ ] With Keyboard Controls
     - [ ] Zoom
         - [ ] Click + Drag Left/Right Zoom
-        - [ ] Click Zoom In One Level
-        - [ ] Alt + Click Zoom Out One Level
+        - [X] Click Zoom In One Level
+        - [X] Alt + Click Zoom Out One Level
+        - [ ] Switch to zoom out icon
     - [ ] Add Group
     - [ ] Add Text
         - [ ] Tap to add with auto width
@@ -44,6 +66,7 @@
         - [ ] Convert to PNG
         - [ ] File select text wrapping
     - [ ] Add Vector
+
 - [ ] Artboard Outline
     - [x] Deleting
     - [ ] Drag & Drop Moving

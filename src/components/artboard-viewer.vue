@@ -2,7 +2,7 @@
     <div
         id="artboard-viewer"
         class="position-relative w-100 h-100 user-select-none"
-        :class="artboards && artboards.length > 0 ? 'viewer-current-tool-' + selectedTool : ''"
+        :class="[artboards && artboards.length > 0 ? 'viewer-current-tool-' + selectedTool + (selectedToolCursor ? '-' + selectedToolCursor : '') : '']"
         v-touch:tap="onTouchTapViewer"
         v-touch:moved="onTouchMovedViewer"
         v-touch:moving="onTouchMovingViewer">
@@ -17,6 +17,31 @@
                     'transform-origin': 'top left'
                 }">
                 <artboard v-for="(artboard, i) in artboards" ref="artboards" :key="artboard.id" :pid="i + ''" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
+                <div class="artboard-viewer-overlays">
+                    <div
+                        v-if="selectedTool === 'select' && editingElementBoundingBox"
+                        class="artboard-viewer-editing-element-bounding-box"
+                        :data-editing-element-pid="editingElement"
+                        :style="{
+                            left: editingElementBoundingBox.x + 'px',
+                            top: editingElementBoundingBox.y + 'px',
+                            width: '0px',
+                            height: '0px'
+                        }">
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="n" :style="{ left: '0px', top: '0px', width: editingElementBoundingBox.w + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="w" :style="{ left: '0px', top: '0px', height: editingElementBoundingBox.h + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="s" :style="{ left: '0px', top: editingElementBoundingBox.h + 'px', width: editingElementBoundingBox.w + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="e" :style="{ left: editingElementBoundingBox.w + 'px', top: '0px', height: editingElementBoundingBox.h + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="nw" :style="{ left: '0px', top: '0px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="n" :style="{ left: (editingElementBoundingBox.w / 2) + 'px', top: '0px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="ne" :style="{ left: editingElementBoundingBox.w + 'px', top: '0px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="w" :style="{ left: '0px', top: (editingElementBoundingBox.h / 2) + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="e" :style="{ left: editingElementBoundingBox.w + 'px', top: (editingElementBoundingBox.h / 2) + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="sw" :style="{ left: '0px', top: editingElementBoundingBox.h + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="s" :style="{ left: (editingElementBoundingBox.w / 2) + 'px', top: editingElementBoundingBox.h + 'px' }"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="se" :style="{ left: editingElementBoundingBox.w + 'px', top: editingElementBoundingBox.h + 'px' }"></div>
+                    </div>
+                </div>
             </div>
             <p v-else class="text-center">
                 <template v-if="pages.length > 0">
@@ -30,6 +55,7 @@
                 </template>
             </p>
         </div>
+
         <!-- Control display container -->
         <!--div class="position-absolute" style="top:0; right:0; left:0; bottom: 0">
         </div-->
@@ -76,6 +102,13 @@ export default {
             default: 'panes'
         }
     },
+    data() {
+        return {
+            editingElementBoundingBox: null,
+            selectedArtboardOffsetX: 0,
+            selectedArtboardOffsetY: 0,
+        }
+    },
     computed: {
         artboards() {
             return this.outline;
@@ -83,14 +116,30 @@ export default {
         editingElement() {
             return store.state.editingElement;
         },
-        selectedElement() {
-            return store.state.selectedElement;
+        editingElementDefinition() {
+            return store.getters.elementDefinition(this.editingElement);
         },
-        selectedPage() {
-            return store.state.selectedPage;
+        editingElementDimensions() {
+            if (this.editingElementDefinition) {
+                const position = this.editingElementDefinition.position;
+                const dimensions = this.editingElementDefinition.dimensions;
+                return { 
+                    x: position ? position.x : 0,
+                    y: position ? position.y : 0,
+                    w: dimensions ? dimensions.w : 0,
+                    h: dimensions ? dimensions.h : 0
+                };
+            }
+            return null;
+        },
+        selectedArtboard() {
+            return store.state.selectedArtboard;
         },
         selectedTool() {
             return store.state.selectedTool;
+        },
+        selectedToolCursor() {
+            return store.state.selectedToolCursor;
         },
         outline() {
             const selectedPage = store.state.selectedPage;
@@ -113,11 +162,22 @@ export default {
         }
     },
     watch: {
-        editingElement(newElement) {
-            this.positionEditingElement(newElement);
+        editingElementDimensions(editingElementDimensions) {
+            this.calculateEditingElementBoundingBox(editingElementDimensions);
         },
-        selectedElement(newElement) {
-            this.positionSelectedElement(newElement);
+        selectedArtboard() {
+            const artboardCanvas = this.$el.querySelector(`[data-artboard-canvas-viewer] [data-artboard-id="${this.selectedArtboard}"]`);
+            const artboardPositioningContainer = document.getElementById('artboard-viewer-positioning-container');
+            if (artboardCanvas && artboardPositioningContainer) {
+                const artboardCanvasRect = artboardCanvas.getBoundingClientRect();
+                const artboardPositioningContainerRect = artboardPositioningContainer.getBoundingClientRect();
+                this.selectedArtboardOffsetX = artboardCanvasRect.left - artboardPositioningContainerRect.left;
+                this.selectedArtboardOffsetY = artboardCanvasRect.top - artboardPositioningContainerRect.top;
+            } else {
+                this.selectedArtboardOffsetX = 0;
+                this.selectedArtboardOffsetY = 0;
+            }
+            this.calculateEditingElementBoundingBox(this.editingElementDimensions);
         },
         selectedPage() {
             this.scrollIntoView('0');
@@ -139,6 +199,26 @@ export default {
         this.$root.$off('store::mutation::setSelectedElements', this.handleSetSelectedElement);
     },
     methods: {
+        calculateEditingElementBoundingBox(editingElementDimensions) {
+            if (editingElementDimensions) {
+                const component = viewerPidToComponentMap.get(this.editingElement);
+                if (component) {
+                    const position = component.getPosition();
+                    this.editingElementBoundingBox = {
+                        x: position.x,
+                        y: position.y,
+                        w: component.definition.dimensions.w,
+                        h: component.definition.dimensions.h
+                    };
+                } else {
+                    this.editingElementBoundingBox = { ...editingElementDimensions };
+                }
+                this.editingElementBoundingBox.x += this.selectedArtboardOffsetX;
+                this.editingElementBoundingBox.y += this.selectedArtboardOffsetY;
+            } else {
+                this.editingElementBoundingBox = null;
+            }
+        },
         calcElementRootPositionByKey(pid) {
             let x = 0;
             let y = 0;
@@ -175,29 +255,6 @@ export default {
                     this.$refs.artboards[i].draw();
                 }
             }
-        },
-        getPidUnderMouse(e) {
-            const clickedElements = [].slice.call(document.elementsFromPoint(e.pageX, e.pageY));
-            const scopeIdPrefix = (this.editingElement || '');
-            const scopeIdLength = (this.editingElement || '').split('.').length;
-            let selectedPid = null;
-            for (let i = 0; i < clickedElements.length; i++) {
-                const element = clickedElements[i];
-                if (element && element.getAttribute) {
-                    const pid = element.getAttribute('data-pid');
-                    if (pid) {
-                        if (pid.startsWith(scopeIdPrefix)) {
-                            selectedPid = pid.split('.').slice(0, scopeIdLength + 1).join('.');
-                            break;
-                        } else {
-                            const commonIdLength = this.getSharedStringStart([scopeIdPrefix, pid]).replace(/\.$/, '').split('.').length;
-                            selectedPid = pid.split('.').slice(0, commonIdLength + 1).join('.');
-                            break;
-                        }
-                    }
-                }
-            }
-            return selectedPid;
         },
         getSharedStringStart(array){
             let A = array.concat().sort(), 
@@ -246,21 +303,7 @@ export default {
         onKeyDownClickTrap() {
             
         },
-        onMouseDownClickTrap(e) {
-            const selectedElement = this.getPidUnderMouse(e);
-            if (selectedElement) {
-                store.dispatch('setSelectedElement', selectedElement);
-            }
-            this.$refs.clickTrap.focus();
-        },
         onMouseUpClickTrap() {
-            this.$refs.clickTrap.focus();
-        },
-        onDoubleClickClickTrap(e) {
-            const editingElement = this.getPidUnderMouse(e);
-            if (editingElement) {
-                store.dispatch('setEditingElement', editingElement);
-            }
             this.$refs.clickTrap.focus();
         },
         onTouchTapViewer(e) {
@@ -282,19 +325,6 @@ export default {
                 this.$refs.editingOutline.style.top = (position.y + artboardRects.top - viewRects.top) + 'px';
                 this.$refs.editingOutline.style.width = position.w + 'px';
                 this.$refs.editingOutline.style.height = position.h + 'px';
-            }
-            */
-        },
-        positionSelectedElement(newElement) {
-            /*
-            if (newElement && this.$refs.selectedOutline) {
-                const position = this.calcElementRootPositionByKey(newElement);
-                const viewRects = this.$el.getBoundingClientRect();
-                const artboardRects = this.$refs.artboard.$el.getBoundingClientRect();
-                this.$refs.selectedOutline.style.left = (position.x + artboardRects.left - viewRects.left) + 'px';
-                this.$refs.selectedOutline.style.top = (position.y + artboardRects.top - viewRects.top) + 'px';
-                this.$refs.selectedOutline.style.width = position.w + 'px';
-                this.$refs.selectedOutline.style.height = position.h + 'px';
             }
             */
         },
@@ -376,30 +406,66 @@ export default {
         box-shadow: 0 0 0 2px #b5c9e4;
     }
 }
-@keyframes editing-element-outline {
+@keyframes artboard-viewer-editing-element-outline {
     0% {
-        box-shadow: 0 0 0 1px #ccc;
+        background-color: #ccc;
     }
     50% {
-        box-shadow: 0 0 0 1px #777;
+        background-color: #777;
     }
     100% {
-        box-shadow: 0 0 0 1px #ccc;
+        background-color: #ccc;
     }
 }
 .viewer-current-tool-select {
     cursor: default;
 }
+.viewer-current-tool-select-resize-n {
+    cursor: ns-resize;
+}
+.viewer-current-tool-select-resize-ne {
+    cursor: ne-resize;
+}
+.viewer-current-tool-select-resize-e {
+    cursor: ew-resize;
+}
+.viewer-current-tool-select-resize-se {
+    cursor: se-resize;
+}
+.viewer-current-tool-select-resize-s {
+    cursor: ns-resize;
+}
+.viewer-current-tool-select-resize-sw {
+    cursor: sw-resize;
+}
+.viewer-current-tool-select-resize-w {
+    cursor: ew-resize;
+}
+.viewer-current-tool-select-resize-nw {
+    cursor: nw-resize;
+}
+.viewer-current-tool-select-resize-n,
+.viewer-current-tool-select-resize-ne,
+.viewer-current-tool-select-resize-e,
+.viewer-current-tool-select-resize-se,
+.viewer-current-tool-select-resize-s,
+.viewer-current-tool-select-resize-sw,
+.viewer-current-tool-select-resize-w,
+.viewer-current-tool-select-resize-nw {
+    .artboard-viewer-overlays {
+        pointer-events: none !important;
+    }
+}
 .viewer-current-tool-pan {
     cursor: grab;
 }
-.viewer-current-tool-pan-alt {
+.viewer-current-tool-pan-moving {
     cursor: grabbing;
 }
 .viewer-current-tool-zoom {
     cursor: zoom-in;
 }
-.viewer-current-tool-zoom-alt {
+.viewer-current-tool-zoom-out {
     cursor: zoom-out;
 }
 .viewer-current-tool-text {
@@ -408,19 +474,185 @@ export default {
 .viewer-current-tool-image {
     cursor: cell;
 }
-.selected-element-outline {
-    animation: selected-element-outline 1.5s infinite;
+.artboard-viewer-overlays {
     position: absolute;
-    box-sizing: border-box;
-    pointer-events: none;
 }
-.editing-element-outline {
-    animation: editing-element-outline 1.5s infinite;
+.artboard-viewer-editing-element-bounding-box {
+    box-sizing: border-box;
+    height: 0px;
+    overflow: visible;
     position: absolute;
-    box-sizing: border-box;
-    pointer-events: none;
+    width: 0px;
 }
-.editing-element-outline-control {
+.artboard-viewer-editing-element-bounding-box-edge {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin-top: 0;
+    margin-left: 0;
+    width: 0;
+    height: 0;
+
+    &:before {
+        content: '';
+        animation: artboard-viewer-editing-element-outline 1.5s infinite;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    &:hover:before {
+        animation: none;
+        background-color: #3781e1;
+    }
+
+    &[data-resize-direction="n"] {
+        cursor: ns-resize;
+        height: 6px;
+        margin-top: -6px;
+        &:before {
+            width: 100%;
+            height: 2px;
+            margin-top: 4px;
+        }
+    }
+    &[data-resize-direction="e"] {
+        cursor: ew-resize;
+        width: 6px;
+        margin-left: 0px;
+        &:before {
+            height: 100%;
+            width: 2px;
+            margin-left: 0px;
+        }
+    }
+    &[data-resize-direction="s"] {
+        cursor: ns-resize;
+        height: 6px;
+        margin-top: 0;
+        &:before {
+            width: 100%;
+            height: 2px;
+            margin-top: 0px;
+        }
+    }
+    &[data-resize-direction="w"] {
+        cursor: ew-resize;
+        width: 6px;
+        margin-left: -6px;
+        &:before {
+            height: 100%;
+            width: 2px;
+            margin-left: 4px;
+        }
+    }
+}
+.artboard-viewer-editing-element-bounding-box-control {
+    contain: layout;
+    margin-left: 0px;
+    margin-top: 0px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 10px;
+    width: 10px;
+
+    &:before {
+        content: '';
+        background: white;
+        border: 1px solid #999;
+        border-radius: 1px;
+        box-shadow: 0 0 3px rgba(100, 100, 100, 0.3), 0 0 0 1px #ccc;
+        box-sizing: border-box;
+        margin-left: 0;
+        margin-top: 0;
+        pointer-events: none;
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 6px;
+        width: 6px;
+    }
+
+    &:hover:before {
+        background: #3781e1;
+    }
+
+    &[data-resize-direction="nw"] {
+        cursor: nw-resize;
+        margin-left: -10px;
+        margin-top: -10px;
+        &:before {
+            margin-left: 4px;
+            margin-top: 4px;
+        }
+    }
+    &[data-resize-direction="n"] {
+        cursor: n-resize;
+        margin-left: -5px;
+        margin-top: -10px;
+        &:before {
+            margin-left: 2px;
+            margin-top: 4px;
+        }
+    }
+    &[data-resize-direction="ne"] {
+        cursor: ne-resize;
+        margin-left: 0px;
+        margin-top: -10px;
+        &:before {
+            margin-left: 0px;
+            margin-top: 4px;
+        }
+    }
+    &[data-resize-direction="w"] {
+        cursor: w-resize;
+        margin-left: -10px;
+        margin-top: -5px;
+        &:before {
+            margin-left: 4px;
+            margin-top: 2px;
+        }
+    }
+    &[data-resize-direction="e"] {
+        cursor: e-resize;
+        margin-left: 0px;
+        margin-top: -5px;
+        &:before {
+            margin-left: 0px;
+            margin-top: 2px;
+        }
+    }
+    &[data-resize-direction="sw"] {
+        cursor: sw-resize;
+        margin-left: -10px;
+        margin-top: 0px;
+        &:before {
+            margin-left: 4px;
+            margin-top: 0px;
+        }
+    }
+    &[data-resize-direction="s"] {
+        cursor: s-resize;
+        margin-left: -5px;
+        margin-top: 0px;
+        &:before {
+            margin-left: 2px;
+            margin-top: 0px;
+        }
+    }
+    &[data-resize-direction="se"] {
+        cursor: se-resize;
+        margin-left: 0px;
+        margin-top: 0px;
+        &:before {
+            margin-left: 0px;
+            margin-top: 0px;
+        }
+    }
+}
+/*
+.artboard-viewer-editing-element-bounding-box-control {
     background: white;
     border: 1px solid #999;
     border-radius: 1px;
@@ -434,16 +666,17 @@ export default {
     height: 6px;
     width: 6px;
 }
-.editing-element-outline-control-top {
+.artboard-viewer-editing-element-bounding-box-control-top {
     top: 0;
 }
-.editing-element-outline-control-left {
+.artboard-viewer-editing-element-bounding-box-control-left {
     left: 0;
 }
-.editing-element-outline-control-right {
+.artboard-viewer-editing-element-bounding-box-control-right {
     left: 100%;
 }
-.editing-element-outline-control-bottom {
+.artboard-viewer-editing-element-bounding-box-control-bottom {
     top: 100%;
 }
+*/
 </style>

@@ -4,7 +4,7 @@ import { getAveragePosition, touchState } from './common';
 let panningStoreUpdateHandle;
 const events = {
     onTouchStart(context, e) {
-
+        store.dispatch('setSelectedToolCursor', 'moving');
     },
     onTouchTap(context, e) {
 
@@ -40,7 +40,9 @@ const events = {
         }
     },
     onTouchEnd(context, e) {
-
+        if (!touchState.isTouchDown) {
+            store.dispatch('setSelectedToolCursor', '');
+        }
     }
 };
 export default events;

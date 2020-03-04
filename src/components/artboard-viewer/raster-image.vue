@@ -7,7 +7,7 @@
 import {
     ClampToEdgeWrapping, DoubleSide, BackSide, Mesh, Line, LineBasicMaterial,
     MeshBasicMaterial, NearestFilter, BoxGeometry, Shape, Group,
-    PlaneGeometry, TextureLoader, BufferGeometry
+    PlaneGeometry, TextureLoader, BufferGeometry, Vector3
 } from 'three';
 import { viewerPidToComponentMap } from '@/lib/viewer';
 
@@ -95,6 +95,15 @@ export default {
                 this.selectionMesh = line;
                 this.scene.add(this.selectionMesh);
             }
+        },
+        getPosition() {
+            this.mesh.parent.updateMatrixWorld();
+            const worldPosition = this.mesh.getWorldPosition(new Vector3());
+            return {
+                x: worldPosition.x - Math.floor(this.definition.dimensions.w / 2),
+                y: worldPosition.y - Math.floor(this.definition.dimensions.h / 2),
+                z: worldPosition.z
+            };
         },
         setX(x) {
             this.mesh.position.x = x + Math.floor(this.definition.dimensions.w / 2);

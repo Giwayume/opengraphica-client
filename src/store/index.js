@@ -84,6 +84,7 @@ const store = new Vuex.Store({
             'image'
         ],
         selectedTool: 'select',
+        selectedToolCursor: '',
         selectedPage: null, // ID (number), not index
         selectedArtboard: null, // ID (number), not index
         selectedElements: [],
@@ -333,6 +334,9 @@ const store = new Vuex.Store({
         setSelectedTool(state, selectedTool) {
             state.selectedTool = selectedTool;
         },
+        setSelectedToolCursor(state, selectedToolCursor) {
+            state.selectedToolCursor = selectedToolCursor;
+        },
         setSkipHomePage(state, skipHomePage) {
             state.skipHomePage = skipHomePage;
             localStorage.setItem('skipHomePage', skipHomePage + '');
@@ -490,6 +494,10 @@ const store = new Vuex.Store({
         },
         setSelectedTool({ commit }, selectedTool) {
             commit('setSelectedTool', selectedTool);
+            commit('setSelectedToolCursor', '');
+        },
+        setSelectedToolCursor({ commit }, selectedToolCursor) {
+            commit('setSelectedToolCursor', selectedToolCursor);
         },
         setSkipHomePage({ commit }, skipHomePage) {
             commit('setSkipHomePage', skipHomePage);

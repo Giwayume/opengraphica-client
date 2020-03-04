@@ -1,6 +1,9 @@
 import io from '@/lib/io';
 
 const events = {
+    onTouchStart(context, e) {
+        
+    },
     onTouchTap(context, e) {
         if (io.events.zoom_switch_modifier) {
             context.$root.$emit('io::keydown::zoom_out');

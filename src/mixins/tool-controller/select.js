@@ -10,6 +10,9 @@ let touchStartSelectPid = null;
 let touchStartSelectComponent = null;
 let touchStartSelectComponentX = 0;
 let touchStartSelectComponentY = 0;
+let touchStartSelectWidth = 0;
+let touchStartSelectHeight = 0;
+let touchStartResizeDirection = null;
 let draggingStoreUpdateHandle = null;
 
 function selectElementUnderTouch() {
@@ -89,11 +92,28 @@ function selectElementUnderTouch() {
 
 const events = {
     onTouchStart(context, e) {
-        touchStartSelectPid = selectElementUnderTouch();
-        touchStartSelectComponent = viewerPidToComponentMap.get(touchStartSelectPid) || null;
-        if (touchStartSelectComponent) {
-            touchStartSelectComponentX = touchStartSelectComponent.definition.position.x;
-            touchStartSelectComponentY = touchStartSelectComponent.definition.position.y;
+        // Resize editing element
+        if (!touchStartResizeDirection && e.target.hasAttribute('data-resize-direction')) {
+            touchStartSelectPid = e.target.closest('[data-editing-element-pid]').getAttribute('data-editing-element-pid');
+            touchStartResizeDirection = e.target.getAttribute('data-resize-direction');
+        }
+        // Move selected element(s)
+        else if (!touchStartSelectPid) {
+            touchStartSelectPid = selectElementUnderTouch();
+        }
+        // Get component from PID
+        if (touchStartSelectPid) {
+            touchStartSelectComponent = viewerPidToComponentMap.get(touchStartSelectPid) || null;
+            if (touchStartSelectComponent) {
+                touchStartSelectComponentX = touchStartSelectComponent.definition.position.x;
+                touchStartSelectComponentY = touchStartSelectComponent.definition.position.y;
+                touchStartSelectWidth = touchStartSelectComponent.definition.dimensions.w;
+                touchStartSelectHeight = touchStartSelectComponent.definition.dimensions.h;
+            } else {
+                const artboardDefinition = store.getters.elementDefinition(touchStartSelectPid);
+                touchStartSelectWidth = artboardDefinition.dimensions.w;
+                touchStartSelectHeight = artboardDefinition.dimensions.h;
+            }
         }
     },
     onTouchTap(context, e) {
@@ -105,38 +125,105 @@ const events = {
     
     },
     onTouchMoving(context, e) {
-        if (touchState.isTouchDown && touchStartSelectComponent) {
-            const pid = touchStartSelectPid;
-            const averagePosition = getAveragePosition(e);
-            const deltaX = averagePosition.x - touchState.touchDownAveragePosition.x;
-            const deltaY = averagePosition.y - touchState.touchDownAveragePosition.y;
-            const canvasZoom = store.state.canvas.zoom;
-            const newX = touchStartSelectComponentX + (deltaX / canvasZoom);
-            const newY = touchStartSelectComponentY + (deltaY / canvasZoom);
-            const newZ = touchStartSelectComponent.definition.position.z;
-            touchStartSelectComponent.setX(newX);
-            touchStartSelectComponent.setY(newY);
-            clearTimeout(draggingStoreUpdateHandle);
-            draggingStoreUpdateHandle = setTimeout(() => {
-                store.dispatch('updateElementDefinition', {
-                    pid,
-                    definition: {
-                        position: {
-                            x: newX,
-                            y: newY,
-                            z: newZ
+        if (touchState.isTouchDown) {
+            if (touchStartResizeDirection || touchStartSelectComponent) {
+                const pid = touchStartSelectPid;
+                const averagePosition = getAveragePosition(e);
+                const deltaX = averagePosition.x - touchState.touchDownAveragePosition.x;
+                const deltaY = averagePosition.y - touchState.touchDownAveragePosition.y;
+                const canvasZoom = store.state.canvas.zoom;
+
+                // Resize editing element
+                if (touchStartResizeDirection) {
+                    store.dispatch('setSelectedToolCursor', 'resize-' + touchStartResizeDirection);
+                    let newX = touchStartSelectComponentX;
+                    let newY = touchStartSelectComponentY;
+                    let newPanX = touchState.touchDownPan.x;
+                    let newPanY = touchState.touchDownPan.y;
+                    let newWidth = touchStartSelectWidth;
+                    let newHeight = touchStartSelectHeight;
+                    if (touchStartResizeDirection.includes('n')) {
+                        if (touchStartSelectComponent) {
+                            newY = Math.round(touchStartSelectComponentY + (deltaY / canvasZoom));
+                        } else {
+                            newPanY = touchState.touchDownPan.y + (deltaY / canvasZoom);
                         }
+                        newHeight = Math.round(touchStartSelectHeight - (deltaY / canvasZoom));
                     }
-                });
-            }, 100);
+                    if (touchStartResizeDirection.includes('w')) {
+                        if (touchStartSelectComponent) {
+                            newX = Math.round(touchStartSelectComponentX + (deltaX / canvasZoom));
+                        } else {
+                            newPanX = touchState.touchDownPan.x + (deltaX / canvasZoom);
+                        }
+                        newWidth = Math.round(touchStartSelectWidth - (deltaX / canvasZoom));
+                    }
+                    if (touchStartResizeDirection.includes('e')) {
+                        newWidth = Math.round(touchStartSelectWidth + (deltaX / canvasZoom));
+                    }
+                    if (touchStartResizeDirection.includes('s')) {
+                        newHeight = Math.round(touchStartSelectHeight + (deltaY / canvasZoom));
+                    }
+                    const definitionUpdate = {};
+                    if (touchStartSelectComponent) {
+                        definitionUpdate.position = {
+                            x: newX,
+                            y: newY
+                        };
+                    }
+                    definitionUpdate.dimensions = {
+                        w: newWidth,
+                        h: newHeight
+                    };
+                    clearTimeout(draggingStoreUpdateHandle);
+                    draggingStoreUpdateHandle = setTimeout(() => {
+                        if (newPanX !== touchState.touchDownPan.x || newPanY !== touchState.touchDownPan.y) {
+                            store.dispatch('setCanvasPan', {
+                                x: newPanX,
+                                y: newPanY
+                            });
+                        }
+                        store.dispatch('updateElementDefinition', {
+                            pid,
+                            definition: definitionUpdate
+                        });
+                    }, 1);
+                }
+
+                // Move selected elements(s)
+                else if (touchStartSelectComponent) {
+                    const newX = Math.round(touchStartSelectComponentX + (deltaX / canvasZoom));
+                    const newY = Math.round(touchStartSelectComponentY + (deltaY / canvasZoom));
+                    const newZ = touchStartSelectComponent.definition.position.z;
+                    touchStartSelectComponent.setX(newX);
+                    touchStartSelectComponent.setY(newY);
+                    clearTimeout(draggingStoreUpdateHandle);
+                    draggingStoreUpdateHandle = setTimeout(() => {
+                        store.dispatch('updateElementDefinition', {
+                            pid,
+                            definition: {
+                                position: {
+                                    x: newX,
+                                    y: newY,
+                                    z: newZ
+                                }
+                            }
+                        });
+                    }, 100);
+                }
+            }
         }
         
     },
     onTouchEnd(context, e) {
+        store.dispatch('setSelectedToolCursor', '');
         touchStartSelectPid = null;
         touchStartSelectComponent = null;
         touchStartSelectComponentX = 0;
         touchStartSelectComponentY = 0;
+        touchStartSelectWidth = 0;
+        touchStartSelectHeight = 0;
+        touchStartResizeDirection = null;
     }
 };
 export default events;
