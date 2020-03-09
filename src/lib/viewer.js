@@ -1,3 +1,11 @@
+let artboardViewerComponent = null;
 const viewerPidToComponentMap = new Map();
 
-export { viewerPidToComponentMap };
+const getArtboardViewerComponent = () => {
+    return artboardViewerComponent;
+}
+const setArtboardViewerComponent = (component) => {
+    artboardViewerComponent = component;
+}
+
+export { viewerPidToComponentMap, getArtboardViewerComponent, setArtboardViewerComponent };

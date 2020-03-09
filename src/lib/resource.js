@@ -1,5 +1,5 @@
 import store from '@/store';
-import { Cache } from 'three';
+import { Cache, FontLoader } from 'three';
 Cache.enabled = true;
 
 export function loadResourcesToThreeCache() {
@@ -79,4 +79,34 @@ export function loadFileAsResource(file) {
         });
         reader.readAsDataURL(file);
     });
+}
+
+export async function loadDefaultFontResource() {
+    let resourceId = null;
+    resourceId = await new Promise((resolve, reject) => {
+        const fontLoader = new FontLoader();
+        fontLoader.load('assets/fonts/arial.json', async (font) => {
+            const timestamp = new Date().getTime();
+            const resourceId = await store.dispatch('addResource', {
+                type: 'font',
+                data: font,
+                thumbnailData: null,
+                meta: {
+                    lastThumbnailGenerationTimestamp: timestamp,
+                    name: ''
+                }
+            });
+            store.dispatch('setDefaultFontResourceId', resourceId);
+            resolve(resourceId);
+        });
+    });
+    return resourceId;
+}
+
+export async function getDefaultFontResourceId() {
+    let resourceId = store.state.defaultFontResourceId;
+    if (resourceId == null) {
+        resourceId = await loadDefaultFontResource();
+    }
+    return resourceId;
 }

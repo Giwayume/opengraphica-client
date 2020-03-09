@@ -26,11 +26,13 @@
 import { Color, OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import store from '@/store';
 import RasterImageViewer from './raster-image.vue';
+import TextViewer from './text.vue';
 
 export default {
     name: 'ViewerCanvas',
     components: {
-        'raster-image-viewer': RasterImageViewer
+        'raster-image-viewer': RasterImageViewer,
+        'text-viewer': TextViewer
     },
     foo: 'bar',
     props: {
@@ -76,13 +78,13 @@ export default {
     created() {
         const canvasWidth = this.definition.dimensions.w;
         const canvasHeight = this.definition.dimensions.h;
-        this.camera = new OrthographicCamera(-canvasWidth/2, canvasWidth/2, -canvasHeight/2, canvasHeight/2, 0.00001, 10);
+        this.camera = new OrthographicCamera(-canvasWidth/2, canvasWidth/2, -canvasHeight/2, canvasHeight/2, 0.00001, 20000);
         this.camera.position.x = canvasWidth/2;
         this.camera.position.y = canvasHeight/2;
-        this.camera.position.z = 0.0001;
+        this.camera.position.z = 10000;
         this.scene = new Scene();
         this.scene.background = new Color(0xffffff);
-        this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
+        this.renderer = new WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         this.renderer.setSize(canvasWidth, canvasHeight);
     },
     mounted() {

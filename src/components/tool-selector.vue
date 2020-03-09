@@ -9,7 +9,9 @@
                 :variant="selectedTool === toolName ? 'dark-medium' : 'darker-medium'"
                 :title="tools[toolName].title + (selectedTool === toolName ? ' (Current)' : '')"
                 class="mt-1 mx-1"
-                @click="selectedTool = toolName"
+                @touchstart="onSelectTool(toolName)"
+                @mousedown="onSelectTool(toolName)"
+                @keydown.enter="onSelectTool(toolName)"
             >
                 <i :class="tools[toolName].icon"></i>
             </b-button>
@@ -33,6 +35,11 @@ export default {
         },
         toolOrder() {
             return this.$store.state.toolOrder;
+        }
+    },
+    methods: {
+        onSelectTool(toolName) {
+            this.selectedTool = toolName;
         }
     }
 }

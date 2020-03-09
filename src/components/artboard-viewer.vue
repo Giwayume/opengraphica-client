@@ -13,33 +13,29 @@
                 class="position-relative"
                 :style="{
                     contain: 'layout',
-                    transform: 'translate(' + panX + 'px, ' + panY + 'px) scale(' + zoomLevel + ')',
+                    'backface-visibility': 'hidden',
+                    transform: 'translate3d(' + panX + 'px, ' + panY + 'px, 0px) scale(' + zoomLevel + ')',
                     'transform-origin': 'top left'
                 }">
                 <artboard v-for="(artboard, i) in artboards" ref="artboards" :key="artboard.id" :pid="i + ''" :definition="artboard" :previous-artboards="artboards.slice(0, i)" />
                 <div class="artboard-viewer-overlays">
                     <div
                         v-if="selectedTool === 'select' && editingElementBoundingBox"
+                        ref="editingElementBoundingBox"
                         class="artboard-viewer-editing-element-bounding-box"
-                        :data-editing-element-pid="editingElement"
-                        :style="{
-                            left: editingElementBoundingBox.x + 'px',
-                            top: editingElementBoundingBox.y + 'px',
-                            width: '0px',
-                            height: '0px'
-                        }">
-                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="n" :style="{ left: '0px', top: '0px', width: editingElementBoundingBox.w + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="w" :style="{ left: '0px', top: '0px', height: editingElementBoundingBox.h + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="s" :style="{ left: '0px', top: editingElementBoundingBox.h + 'px', width: editingElementBoundingBox.w + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-edge" data-resize-direction="e" :style="{ left: editingElementBoundingBox.w + 'px', top: '0px', height: editingElementBoundingBox.h + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="nw" :style="{ left: '0px', top: '0px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="n" :style="{ left: (editingElementBoundingBox.w / 2) + 'px', top: '0px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="ne" :style="{ left: editingElementBoundingBox.w + 'px', top: '0px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="w" :style="{ left: '0px', top: (editingElementBoundingBox.h / 2) + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="e" :style="{ left: editingElementBoundingBox.w + 'px', top: (editingElementBoundingBox.h / 2) + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="sw" :style="{ left: '0px', top: editingElementBoundingBox.h + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="s" :style="{ left: (editingElementBoundingBox.w / 2) + 'px', top: editingElementBoundingBox.h + 'px' }"></div>
-                        <div class="artboard-viewer-editing-element-bounding-box-control" data-resize-direction="se" :style="{ left: editingElementBoundingBox.w + 'px', top: editingElementBoundingBox.h + 'px' }"></div>
+                        :data-editing-element-pid="editingElement">
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" ref="editingElementBoundingBoxEdgeN" data-resize-direction="n"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" ref="editingElementBoundingBoxEdgeW" data-resize-direction="w"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" ref="editingElementBoundingBoxEdgeS" data-resize-direction="s"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-edge" ref="editingElementBoundingBoxEdgeE" data-resize-direction="e"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlNW" data-resize-direction="nw"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlN" data-resize-direction="n"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlNE" data-resize-direction="ne"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlW" data-resize-direction="w"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlE" data-resize-direction="e"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlSW" data-resize-direction="sw"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlS" data-resize-direction="s"></div>
+                        <div class="artboard-viewer-editing-element-bounding-box-control" ref="editingElementBoundingBoxControlSE" data-resize-direction="se"></div>
                     </div>
                 </div>
             </div>
@@ -86,7 +82,7 @@
 import store from '@/store';
 import Artboard from './artboard-viewer/artboard.vue';
 import toolControllerMixin from '@/mixins/tool-controller.js';
-import { viewerPidToComponentMap } from '@/lib/viewer';
+import { setArtboardViewerComponent, viewerPidToComponentMap } from '@/lib/viewer';
 
 export default {
     name: 'ArtboardViewer',
@@ -119,19 +115,6 @@ export default {
         editingElementDefinition() {
             return store.getters.elementDefinition(this.editingElement);
         },
-        editingElementDimensions() {
-            if (this.editingElementDefinition) {
-                const position = this.editingElementDefinition.position;
-                const dimensions = this.editingElementDefinition.dimensions;
-                return { 
-                    x: position ? position.x : 0,
-                    y: position ? position.y : 0,
-                    w: dimensions ? dimensions.w : 0,
-                    h: dimensions ? dimensions.h : 0
-                };
-            }
-            return null;
-        },
         selectedArtboard() {
             return store.state.selectedArtboard;
         },
@@ -162,8 +145,32 @@ export default {
         }
     },
     watch: {
-        editingElementDimensions(editingElementDimensions) {
-            this.calculateEditingElementBoundingBox(editingElementDimensions);
+        editingElementBoundingBox(editingElementBoundingBox) {
+            if (editingElementBoundingBox) {
+                if (this.$refs.editingElementBoundingBox) {
+                    this.calcEditingElementBoundingBoxStyles(editingElementBoundingBox);
+                } else {
+                    this.$nextTick(() => {
+                        this.calcEditingElementBoundingBoxStyles(editingElementBoundingBox);
+                    });
+                }
+            }
+        },
+        'editingElementDefinition'() {
+            this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
+        },
+        'editingElementDefinition.dimensions'() {
+            this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
+        },
+        'editingElementDefinition.position'() {
+            this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
+        },
+        async 'editingElementDefinition.scale'() {
+            await this.$nextTick();
+            this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
+        },
+        selectedTool() {
+            this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
         },
         selectedArtboard() {
             const artboardCanvas = this.$el.querySelector(`[data-artboard-canvas-viewer] [data-artboard-id="${this.selectedArtboard}"]`);
@@ -177,13 +184,14 @@ export default {
                 this.selectedArtboardOffsetX = 0;
                 this.selectedArtboardOffsetY = 0;
             }
-            this.calculateEditingElementBoundingBox(this.editingElementDimensions);
+            this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
         },
         selectedPage() {
             this.scrollIntoView('0');
         }
     },
     mounted() {
+        setArtboardViewerComponent(this);
         this.scrollIntoView('0');
         this.$root.$on('artboardViewer::scrollIntoView', this.scrollIntoView);
         this.$root.$on('store::mutation::addPage', this.scrollIntoView);
@@ -192,6 +200,7 @@ export default {
         this.$root.$on('store::mutation::setSelectedElements', this.handleSetSelectedElement);
     },
     destroyed() {
+        setArtboardViewerComponent(null);
         this.$root.$off('artboardViewer::scrollIntoView', this.scrollIntoView);
         this.$root.$off('store::mutation::addPage', this.scrollIntoView);
         this.$root.$off('store::mutation::addSelectedElement', this.handleAddSelectedElement);
@@ -199,24 +208,42 @@ export default {
         this.$root.$off('store::mutation::setSelectedElements', this.handleSetSelectedElement);
     },
     methods: {
-        calculateEditingElementBoundingBox(editingElementDimensions) {
-            if (editingElementDimensions) {
-                const component = viewerPidToComponentMap.get(this.editingElement);
-                if (component) {
-                    const position = component.getPosition();
-                    this.editingElementBoundingBox = {
-                        x: position.x,
-                        y: position.y,
-                        w: component.definition.dimensions.w,
-                        h: component.definition.dimensions.h
-                    };
-                } else {
-                    this.editingElementBoundingBox = { ...editingElementDimensions };
-                }
-                this.editingElementBoundingBox.x += this.selectedArtboardOffsetX;
-                this.editingElementBoundingBox.y += this.selectedArtboardOffsetY;
-            } else {
-                this.editingElementBoundingBox = null;
+        calcEditingElementBoundingBoxStyles(editingElementBoundingBox) {
+            if (this.$refs.editingElementBoundingBox) {
+                this.$refs.editingElementBoundingBox.style.left = editingElementBoundingBox.x + 'px';
+                this.$refs.editingElementBoundingBox.style.top = editingElementBoundingBox.y + 'px';
+                this.$refs.editingElementBoundingBox.style.width = '0px';
+                this.$refs.editingElementBoundingBox.style.height = '0px';
+                this.$refs.editingElementBoundingBox.style.transform = 'rotateZ(' + editingElementBoundingBox.rotation + 'deg)';
+                this.$refs.editingElementBoundingBox.style.transformOrigin = editingElementBoundingBox.w / 2 + 'px ' + editingElementBoundingBox.h / 2 + 'px';
+                this.$refs.editingElementBoundingBoxEdgeN.style.left = '0px';
+                this.$refs.editingElementBoundingBoxEdgeN.style.top = '0px';
+                this.$refs.editingElementBoundingBoxEdgeN.style.width = editingElementBoundingBox.w + 'px';
+                this.$refs.editingElementBoundingBoxEdgeW.style.left = '0px';
+                this.$refs.editingElementBoundingBoxEdgeW.style.top = '0px';
+                this.$refs.editingElementBoundingBoxEdgeW.style.height = editingElementBoundingBox.h + 'px';
+                this.$refs.editingElementBoundingBoxEdgeS.style.left = '0px';
+                this.$refs.editingElementBoundingBoxEdgeS.style.top = editingElementBoundingBox.h + 'px';
+                this.$refs.editingElementBoundingBoxEdgeS.style.width = editingElementBoundingBox.w + 'px';
+                this.$refs.editingElementBoundingBoxEdgeE.style.left = editingElementBoundingBox.w + 'px';
+                this.$refs.editingElementBoundingBoxEdgeE.style.top = '0px';
+                this.$refs.editingElementBoundingBoxEdgeE.style.height = editingElementBoundingBox.h + 'px';
+                this.$refs.editingElementBoundingBoxControlNW.style.left = '0px';
+                this.$refs.editingElementBoundingBoxControlNW.style.top = '0px';
+                this.$refs.editingElementBoundingBoxControlN.style.left = (editingElementBoundingBox.w / 2) + 'px';
+                this.$refs.editingElementBoundingBoxControlN.style.top = '0px';
+                this.$refs.editingElementBoundingBoxControlNE.style.left = editingElementBoundingBox.w + 'px';
+                this.$refs.editingElementBoundingBoxControlNE.style.top = '0px';
+                this.$refs.editingElementBoundingBoxControlW.style.left = '0px';
+                this.$refs.editingElementBoundingBoxControlW.style.top = (editingElementBoundingBox.h / 2) + 'px';
+                this.$refs.editingElementBoundingBoxControlE.style.left = editingElementBoundingBox.w + 'px';
+                this.$refs.editingElementBoundingBoxControlE.style.top = (editingElementBoundingBox.h / 2) + 'px';
+                this.$refs.editingElementBoundingBoxControlSW.style.left = '0px';
+                this.$refs.editingElementBoundingBoxControlSW.style.top = editingElementBoundingBox.h + 'px';
+                this.$refs.editingElementBoundingBoxControlS.style.left = (editingElementBoundingBox.w / 2) + 'px';
+                this.$refs.editingElementBoundingBoxControlS.style.top = editingElementBoundingBox.h + 'px';
+                this.$refs.editingElementBoundingBoxControlSE.style.left = editingElementBoundingBox.w + 'px';
+                this.$refs.editingElementBoundingBoxControlSE.style.top = editingElementBoundingBox.h + 'px';
             }
         },
         calcElementRootPositionByKey(pid) {
@@ -255,6 +282,26 @@ export default {
                     this.$refs.artboards[i].draw();
                 }
             }
+        },
+        getEditingElementBoundingBox(editingElementDefinition) {
+            let boundingBox = null;
+            if (editingElementDefinition) {
+                const component = viewerPidToComponentMap.get(this.editingElement);
+                const positionOffset = component ? null : { x: this.selectedArtboardOffsetX, y: this.selectedArtboardOffsetY };
+                const position = component ? component.getPosition(editingElementDefinition) : editingElementDefinition.position;
+                const dimensions = editingElementDefinition.dimensions;
+                const scale = editingElementDefinition.scale;
+                const rotation = editingElementDefinition.rotation;
+
+                boundingBox = { 
+                    x: (position ? position.x : 0) + (positionOffset ? positionOffset.x : 0),
+                    y: (position ? position.y : 0) + (positionOffset ? positionOffset.y : 0),
+                    w: (dimensions ? dimensions.w : 0) * (scale ? scale.x : 1),
+                    h: (dimensions ? dimensions.h : 0) * (scale ? scale.y : 1),
+                    rotation: rotation ? rotation.z : 0
+                };
+            }
+            return boundingBox;
         },
         getSharedStringStart(array){
             let A = array.concat().sort(), 

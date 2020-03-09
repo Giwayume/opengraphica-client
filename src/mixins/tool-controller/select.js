@@ -2,7 +2,7 @@ import { Raycaster } from 'three';
 import store from '@/store';
 import io from '@/lib/io';
 import { getAveragePosition, touchState } from './common';
-import { viewerPidToComponentMap } from '@/lib/viewer';
+import { getArtboardViewerComponent, viewerPidToComponentMap } from '@/lib/viewer';
 
 const raycaster = new Raycaster();
 
@@ -10,8 +10,12 @@ let touchStartSelectPid = null;
 let touchStartSelectComponent = null;
 let touchStartSelectComponentX = 0;
 let touchStartSelectComponentY = 0;
+let touchStartSelectComponentZ = 0;
 let touchStartSelectWidth = 0;
 let touchStartSelectHeight = 0;
+let touchStartSelectScaleX = 0;
+let touchStartSelectScaleY = 0;
+let touchStartSelectScaleZ = 0;
 let touchStartResizeDirection = null;
 let draggingStoreUpdateHandle = null;
 
@@ -107,8 +111,12 @@ const events = {
             if (touchStartSelectComponent) {
                 touchStartSelectComponentX = touchStartSelectComponent.definition.position.x;
                 touchStartSelectComponentY = touchStartSelectComponent.definition.position.y;
+                touchStartSelectComponentZ = touchStartSelectComponent.definition.position.z;
                 touchStartSelectWidth = touchStartSelectComponent.definition.dimensions.w;
                 touchStartSelectHeight = touchStartSelectComponent.definition.dimensions.h;
+                touchStartSelectScaleX = touchStartSelectComponent.definition.scale.x;
+                touchStartSelectScaleY = touchStartSelectComponent.definition.scale.y;
+                touchStartSelectScaleZ = touchStartSelectComponent.definition.scale.z;
             } else {
                 const artboardDefinition = store.getters.elementDefinition(touchStartSelectPid);
                 touchStartSelectWidth = artboardDefinition.dimensions.w;
@@ -136,19 +144,28 @@ const events = {
                 // Resize editing element
                 if (touchStartResizeDirection) {
                     store.dispatch('setSelectedToolCursor', 'resize-' + touchStartResizeDirection);
+                    const resizeType = touchStartSelectComponent && ['raster-image'].includes(touchStartSelectComponent.definition.type) ? 'scale' : 'dimensions';
                     let newX = touchStartSelectComponentX;
                     let newY = touchStartSelectComponentY;
+                    let newZ = touchStartSelectComponentZ;
                     let newPanX = touchState.touchDownPan.x;
                     let newPanY = touchState.touchDownPan.y;
                     let newWidth = touchStartSelectWidth;
                     let newHeight = touchStartSelectHeight;
+                    let newScaleX = touchStartSelectScaleX;
+                    let newScaleY = touchStartSelectScaleY;
+                    let newScaleZ = touchStartSelectScaleZ;
                     if (touchStartResizeDirection.includes('n')) {
                         if (touchStartSelectComponent) {
                             newY = Math.round(touchStartSelectComponentY + (deltaY / canvasZoom));
                         } else {
                             newPanY = touchState.touchDownPan.y + (deltaY / canvasZoom);
                         }
-                        newHeight = Math.round(touchStartSelectHeight - (deltaY / canvasZoom));
+                        if (resizeType === 'scale') {
+                            newScaleY = ((touchStartSelectScaleY * touchStartSelectHeight) - (deltaY / canvasZoom)) / touchStartSelectHeight;
+                        } else {
+                            newHeight = Math.round(touchStartSelectHeight - (deltaY / canvasZoom));
+                        }
                     }
                     if (touchStartResizeDirection.includes('w')) {
                         if (touchStartSelectComponent) {
@@ -156,25 +173,68 @@ const events = {
                         } else {
                             newPanX = touchState.touchDownPan.x + (deltaX / canvasZoom);
                         }
-                        newWidth = Math.round(touchStartSelectWidth - (deltaX / canvasZoom));
+                        if (resizeType === 'scale') {
+                            newScaleX = ((touchStartSelectScaleX * touchStartSelectWidth) - (deltaX / canvasZoom)) / touchStartSelectWidth;
+                        } else {
+                            newWidth = Math.round(touchStartSelectWidth - (deltaX / canvasZoom));
+                        }
                     }
                     if (touchStartResizeDirection.includes('e')) {
-                        newWidth = Math.round(touchStartSelectWidth + (deltaX / canvasZoom));
+                        if (resizeType === 'scale') {
+                            newScaleX = ((touchStartSelectScaleX * touchStartSelectWidth) + (deltaX / canvasZoom)) / touchStartSelectWidth;
+                        } else {
+                            newWidth = Math.round(touchStartSelectWidth + (deltaX / canvasZoom));
+                        }
                     }
                     if (touchStartResizeDirection.includes('s')) {
-                        newHeight = Math.round(touchStartSelectHeight + (deltaY / canvasZoom));
+                        if (resizeType === 'scale') {
+                            newScaleY = ((touchStartSelectScaleY * touchStartSelectHeight) + (deltaY / canvasZoom)) / touchStartSelectHeight;
+                        } else {
+                            newHeight = Math.round(touchStartSelectHeight + (deltaY / canvasZoom));
+                        }
                     }
                     const definitionUpdate = {};
                     if (touchStartSelectComponent) {
                         definitionUpdate.position = {
                             x: newX,
-                            y: newY
+                            y: newY,
+                            z: newZ
                         };
                     }
-                    definitionUpdate.dimensions = {
-                        w: newWidth,
-                        h: newHeight
-                    };
+                    if (resizeType === 'scale') {
+                        definitionUpdate.scale = {
+                            x: newScaleX,
+                            y: newScaleY,
+                            z: newScaleZ
+                        };
+                    } else {
+                        definitionUpdate.dimensions = {
+                            w: newWidth,
+                            h: newHeight
+                        };
+                    }
+                    let updateDelay = 1;
+                    if (touchStartSelectComponent) {
+                        const quickUpdateDefinition = { ...touchStartSelectComponent.definition, ...definitionUpdate };
+                        updateDelay = 100;
+                        touchStartSelectComponent.setX(newX, quickUpdateDefinition);
+                        touchStartSelectComponent.setY(newY, quickUpdateDefinition);
+                        touchStartSelectComponent.setZ(newZ, quickUpdateDefinition);
+                        if (definitionUpdate.scale) {
+                            touchStartSelectComponent.setScaleX(newScaleX, quickUpdateDefinition);
+                            touchStartSelectComponent.setScaleY(newScaleY, quickUpdateDefinition);
+                            touchStartSelectComponent.setScaleZ(newScaleZ, quickUpdateDefinition);
+                        }
+                        if (definitionUpdate.dimensions) {
+                            // TODO? 
+                        }
+                        const artboardViewerComponent = getArtboardViewerComponent();
+                        if (artboardViewerComponent) {
+                            artboardViewerComponent.calcEditingElementBoundingBoxStyles(
+                                artboardViewerComponent.getEditingElementBoundingBox(quickUpdateDefinition)
+                            );
+                        }
+                    }
                     clearTimeout(draggingStoreUpdateHandle);
                     draggingStoreUpdateHandle = setTimeout(() => {
                         if (newPanX !== touchState.touchDownPan.x || newPanY !== touchState.touchDownPan.y) {
@@ -187,7 +247,7 @@ const events = {
                             pid,
                             definition: definitionUpdate
                         });
-                    }, 1);
+                    }, updateDelay);
                 }
 
                 // Move selected elements(s)
@@ -221,8 +281,12 @@ const events = {
         touchStartSelectComponent = null;
         touchStartSelectComponentX = 0;
         touchStartSelectComponentY = 0;
+        touchStartSelectComponentZ = 0;
         touchStartSelectWidth = 0;
         touchStartSelectHeight = 0;
+        touchStartSelectScaleX = 0;
+        touchStartSelectScaleY = 0;
+        touchStartSelectScaleZ = 0;
         touchStartResizeDirection = null;
     }
 };

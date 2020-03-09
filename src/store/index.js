@@ -128,7 +128,19 @@ const store = new Vuex.Store({
             }*/
         ],
         resourceIdCounter: 0,
-        resources: [],
+        resources: [
+            /*
+            {
+                id: 1,
+                type: 'raster-image',
+                data: null,
+                thumbnailData: null,
+                material: null,
+                meta: {}
+            }
+            */
+        ],
+        defaultFontResourceId: null,
         windowSize: {
             width: window.innerWidth,
             height: window.innerHeight
@@ -179,34 +191,8 @@ const store = new Vuex.Store({
             }
             saveHistorySnapshot(state);
         },
-        addElement(state, { definition, parent, index }) {
-            if (!parent) {
-                const selectedPageDefinition = state.pages.filter(page => page.id === state.selectedPage)[0] || null;
-                if (selectedPageDefinition) {
-                    if (state.selectedArtboard != null) {
-                        parent = (selectedPageDefinition.outline.filter(artboard => artboard.id === state.selectedArtboard)[0].id) + '';
-                    } else {
-                        parent = '0';
-                    }
-                }
-            }
-            if (index == null) {
-                index = 0;
-            }
-            const parentDefinition = getElementDefinition(state, state.selectedPage, parent);
-            if (parentDefinition) {
-                if (!parentDefinition.items) {
-                    parentDefinition.items = [];
-                }
-                if (index === -1) {
-                    parentDefinition.items.push(definition);
-                } else {
-                    parentDefinition.items.splice(index, 0, definition);
-                }
-            } else {
-                console.warn('[store] Can\'t add element; parent not found. Parent PID: ' + parent);
-            }
-            saveHistorySnapshot(state);
+        addElement(state, { definition, parent, index, autoEdit }) {
+            
         },
         addPage(state, pageDefinition) {
             pageDefinition = pageDefinition || {};
@@ -308,6 +294,9 @@ const store = new Vuex.Store({
         setCanvasZoom(state, zoom) {
             state.canvas.zoom = zoom;
         },
+        setDefaultFontResourceId(state, defaultFontResourceId) {
+            state.defaultFontResourceId = defaultFontResourceId;
+        },
         setSelectedArtboard(state, selectedArtboard) {
             state.selectedArtboard = selectedArtboard;
             const elementIndex = state.pages.filter((page) => page.id === state.selectedPage)[0].outline.findIndex((artboard) => artboard.id === selectedArtboard);
@@ -377,8 +366,44 @@ const store = new Vuex.Store({
         addArtboard({ commit }, artboardDefinition) {
             commit('addArtboard', artboardDefinition);
         },
-        addElement({ commit }, addDefinition) {
-            commit('addElement', addDefinition);
+        addElement({ state, dispatch }, { definition, parent, index, autoEdit }) {
+            let newPid = '';
+            if (!parent) {
+                const selectedPageDefinition = state.pages.filter(page => page.id === state.selectedPage)[0] || null;
+                if (selectedPageDefinition) {
+                    if (state.selectedArtboard != null) {
+                        parent = (selectedPageDefinition.outline.filter(artboard => artboard.id === state.selectedArtboard)[0].id) + '';
+                    } else {
+                        parent = '0';
+                    }
+                }
+            }
+            if (index == null) {
+                index = 0;
+            }
+            let parentDefinition = getElementDefinition(state, state.selectedPage, parent);
+            if (parentDefinition && !['artboard', 'group'].includes(parentDefinition.type)) {
+                parent = parent.split('.').slice(0, -1).join('.');
+                parentDefinition = getElementDefinition(state, state.selectedPage, parent);
+            }
+            if (parentDefinition) {
+                if (!parentDefinition.items) {
+                    parentDefinition.items = [];
+                }
+                if (index === -1) {
+                    parentDefinition.items.push(definition);
+                } else {
+                    parentDefinition.items.splice(index, 0, definition);
+                }
+                newPid = parent + '.' + (index === -1 ? parentDefinition.items.length - 1 : index);
+            } else {
+                console.warn('[store] Can\'t add element; parent not found. Parent PID: ' + parent);
+            }
+            saveHistorySnapshot(state);
+            if (newPid && autoEdit) {
+                dispatch('setSelectedElements', [newPid]);
+                dispatch('setEditingElement', newPid);
+            }
         },
         addPage({ commit, state }, pageDefinition) {
             commit('addPage', pageDefinition);
@@ -430,6 +455,9 @@ const store = new Vuex.Store({
         },
         setCanvasZoom({ commit }, zoom) {
             commit('setCanvasZoom', zoom);
+        },
+        setDefaultFontResourceId({ commit }, defaultFontResourceId) {
+            commit('setDefaultFontResourceId', defaultFontResourceId);
         },
         setEditingElement({ commit, state }, editingElement) {
             let selectedElements = state.selectedElements.slice();

@@ -13,6 +13,12 @@ const io = {
     },
     registerVm(vue) {
         vm = vue;
+    },
+    resume() {
+        listener.listen();
+    },
+    pause() {
+        listener.stop_listening();
     }
 };
 
@@ -24,7 +30,8 @@ const eventKeyMap = {
         prevent_default: false
     },
     delete: {
-        keys: 'delete'
+        keys: 'delete',
+        prevent_default: false
     },
     export: {
         keys: 'ctrl e'
@@ -88,22 +95,28 @@ for (let eventName in eventKeyMap) {
             is_unordered: event.is_unordered === true,
             on_keydown: function(nativeEvent) {
                 if (!isModifierCombo || (isModifierCombo && !io.modifierComboLock)) {
-                    if (event.prevent_default) {
-                        nativeEvent.preventDefault();
-                    }
                     if (isModifierCombo) {
                         io.modifierComboLock = true;
                     }
-                    io.events[eventName] = true;
-                    vm.$root.$emit('io::keydown::' + eventName, nativeEvent);
+                    const isInsideInput = document.activeElement && ['input', 'textarea'].includes(document.activeElement.tagName.toLowerCase());
+                    if (isModifierCombo || !isInsideInput) {
+                        if (event.prevent_default) {
+                            nativeEvent.preventDefault();
+                        }
+                        io.events[eventName] = true;
+                        vm.$root.$emit('io::keydown::' + eventName, nativeEvent);
+                    }
                 }
             },
-            on_keyup: function(event) {
+            on_keyup: function(nativeEvent) {
                 if (isModifierCombo) {
                     io.modifierComboLock = false;
                 }
-                io.events[eventName] = false;
-                vm.$root.$emit('io::keyup::' + eventName, event);
+                const isInsideInput = document.activeElement && ['input', 'textarea'].includes(document.activeElement.tagName.toLowerCase());
+                if (isModifierCombo || !isInsideInput) {
+                    io.events[eventName] = false;
+                    vm.$root.$emit('io::keyup::' + eventName, nativeEvent);
+                }
             },
             prevent_default: false,
             prevent_repeat: event.prevent_repeat !== false
@@ -115,7 +128,7 @@ window.addEventListener('blur', () => {
     for (let eventName in io.events) {
         if (io.events[eventName]) {
             io.events[eventName] = false;
-            vm.$root.$emit('io::keyup::' + eventName, new KeyboardEvent('foo'));
+            vm.$root.$emit('io::keyup::' + eventName, new KeyboardEvent('window blur'));
         }
     }
 });

@@ -31,13 +31,18 @@
         - [X] Click to select
         - [X] Double-click to edit
         - [X] Ctrl + click to multi-select
+        - [ ] Double-click outside editing element boundaries to escape
         - [ ] Move all selected instead of just the last element selected when dragging.
         - [ ] Snap based on nearby elements
         - [ ] Snap based on guidelines
         - [ ] Snap based on grid
         - [ ] Remove selection outline when using other tools
+        - [ ] Make resize handle same size irregardless of zoom level
         - [X] Resize artboards
-        - [ ] Resize images
+        - [X] Resize images
+            - [ ] Proportional Resizing with CTRL
+            - [ ] 1:1 resizing with SHIFT
+        - [ ] Rotate images
         - [ ] Resize text boundaries
     - [ ] Pan View
         - [X] With Cursor

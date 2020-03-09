@@ -35,6 +35,7 @@ export async function addRasterImage(options) {
     const name = options.name || file.name || (options.source === 'clipboard' ? 'Pasted Image' : 'New Image');
     const rotation = { x: 0, y: 0, z: 0, w: 0, ...options.rotation };
     const dimensions = { w: resourceDef.meta.width, h: resourceDef.meta.height, ...options.dimensions };
+    const scale = { x: 1, y: 1, z: 1, ...options.scale };
     const alpha = options.alpha != null ? options.alpha : 1;
     const blendMode = options.blendMode || 'normal';
     
@@ -56,9 +57,9 @@ export async function addRasterImage(options) {
         }
     }
 
-    const parentPid = options.parentPid || store.state.editingElement;
+    const parentPid = options.parentPid != null ? options.parentId : store.state.editingElement;
     const parentIndex = options.parentIndex;
-    if (options.artboardX && options.artboardY) {
+    if (options.artboardX != null && options.artboardY != null) {
         options.position = getRelativeArtboardPosition(options.artboardX, options.artboardY, parentPid);
     }
     const position = { x: 0, y: 0, z: 0, ...options.position };
@@ -74,6 +75,7 @@ export async function addRasterImage(options) {
             position,
             rotation,
             dimensions,
+            scale,
             alpha,
             blendMode
         },
@@ -86,16 +88,24 @@ export async function addText(options) {
     const name = options.name || 'New Text';
     const html = options.html || '';
     const rotation = { x: 0, y: 0, z: 0, w: 0, ...options.rotation };
-    const dimensions = { w: 'auto', h: 'auto', ...options.dimensions };
+    const dimensions = { w: 30, h: 30, ...options.dimensions };
+    const isAutoWidth = !(options.dimensions && options.dimensions.w);
+    const isAutoHeight = !(options.dimensions && options.dimensions.h);
+    const scale = { x: 1, y: 1, z: 1, ...options.scale };
     const alpha = options.alpha != null ? options.alpha : 1;
     const blendMode = options.blendMode || 'normal';
-    const parentPid = options.parentPid || store.state.editingElement;
+    const fontResourceId = options.fontResourceId != null ? options.fontResourceId : await resource.getDefaultFontResourceId();
+    const parentPid = options.parentPid != null ? options.parentId : store.state.editingElement;
     const parentIndex = options.parentIndex;
-    if (options.artboardX && options.artboardY) {
+    if (options.artboardX != null && options.artboardY != null) {
         options.position = getRelativeArtboardPosition(options.artboardX, options.artboardY, parentPid);
     }
     const position = { x: 0, y: 0, z: 0, ...options.position };
-    await store.dispatch('addElement', {
+    if (options.centerPlacement) {
+        position.x -= Math.floor(dimensions.w / 2);
+        position.y -= Math.floor(dimensions.h / 2);
+    }
+    const pid = await store.dispatch('addElement', {
         definition: {
             name,
             type: 'text',
@@ -103,10 +113,15 @@ export async function addText(options) {
             position,
             rotation,
             dimensions,
+            isAutoWidth,
+            isAutoHeight,
+            scale,
             alpha,
-            blendMode
+            blendMode,
+            fontResourceId
         },
         parent: parentPid,
-        index: parentIndex
+        index: parentIndex,
+        autoEdit: options.source === 'touch'
     });
 }
