@@ -53,8 +53,11 @@ export default {
             this.setScaleZ(z);
         },
         'pid'(pid) {
-            viewerPidToComponentMap.delete(pid);
+            if (viewerPidToComponentMap.get(pid) === this) {
+                viewerPidToComponentMap.delete(pid);
+            }
             viewerPidToComponentMap.set(pid, this);
+            this.mesh.pid = pid;
         }
     },
     mesh: undefined,
@@ -136,14 +139,14 @@ export default {
             this.mesh.parent.updateMatrixWorld();
             const worldPosition = this.mesh.getWorldPosition(new Vector3());
             return {
-                x: worldPosition.x - Math.round(definition.dimensions.w / 2 * definition.scale.x),
-                y: worldPosition.y - Math.round(definition.dimensions.h / 2 * definition.scale.y),
+                x: worldPosition.x - Math.floor(definition.dimensions.w / 2 * definition.scale.x),
+                y: worldPosition.y - Math.floor(definition.dimensions.h / 2 * definition.scale.y),
                 z: worldPosition.z
             };
         },
         setX(x, definition) {
             definition = definition || this.definition;
-            this.mesh.position.x = Math.round(x + definition.dimensions.w / 2 * definition.scale.x);
+            this.mesh.position.x = x + Math.floor(definition.dimensions.w / 2 * definition.scale.x);
             if (this.selectionMesh) {
                 this.selectionMesh.position.x = this.mesh.position.x;
             }
@@ -151,7 +154,7 @@ export default {
         },
         setY(y, definition) {
             definition = definition || this.definition;
-            this.mesh.position.y = Math.round(y + definition.dimensions.h / 2 * definition.scale.y);
+            this.mesh.position.y = y + Math.floor(definition.dimensions.h / 2 * definition.scale.y);
             if (this.selectionMesh) {
                 this.selectionMesh.position.y = this.mesh.position.y;
             }

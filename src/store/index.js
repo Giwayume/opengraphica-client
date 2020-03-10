@@ -80,7 +80,7 @@ const store = new Vuex.Store({
             'pan',
             'zoom',
             'divider',
-            // 'text',
+            'text',
             'image'
         ],
         selectedTool: 'select',
@@ -90,6 +90,7 @@ const store = new Vuex.Store({
         selectedElements: [],
         skipHomePage: false,
         editingElement: null, // PID path
+        elementIdCounter: 0,
         pageIdCounter: 0,
         pages: [
             /*{
@@ -190,9 +191,6 @@ const store = new Vuex.Store({
                 });
             }
             saveHistorySnapshot(state);
-        },
-        addElement(state, { definition, parent, index, autoEdit }) {
-            
         },
         addPage(state, pageDefinition) {
             pageDefinition = pageDefinition || {};
@@ -378,6 +376,7 @@ const store = new Vuex.Store({
                     }
                 }
             }
+            definition.id = state.elementIdCounter++;
             if (index == null) {
                 index = 0;
             }

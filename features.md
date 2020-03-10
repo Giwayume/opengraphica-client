@@ -13,6 +13,9 @@
     - [ ] Retain settings for next export
     - [ ] Remove all selection before rendering image for export
 
+- [ ] Pages
+    - [ ] Scroll artboard into view when switching pages
+
 - [ ] Artboard Rendering
     - [ ] Adding Guidelines
     - [ ] Snapping to Guidelines

@@ -13,7 +13,7 @@
             <component
                 v-for="(item, i) in definition.items"
                 :is="item.type + '-viewer'"
-                :key="i"
+                :key="item.id"
                 :definition="item"
                 :scene="scene"
                 :pid="pid + '.' + i"
