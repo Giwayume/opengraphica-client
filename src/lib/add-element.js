@@ -80,7 +80,8 @@ export async function addRasterImage(options) {
             blendMode
         },
         parent: parentPid,
-        index: parentIndex
+        index: parentIndex,
+        autoEdit: options.source === 'touch'
     });
 }
 

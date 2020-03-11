@@ -15,6 +15,7 @@
 
 - [ ] Pages
     - [ ] Scroll artboard into view when switching pages
+    - [ ] Page settings still displaying after deleting page
 
 - [ ] Artboard Rendering
     - [ ] Adding Guidelines
