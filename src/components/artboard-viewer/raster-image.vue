@@ -134,19 +134,35 @@ export default {
                 this.scene.add(this.selectionMesh);
             }
         },
+        getWidth(definition) {
+            definition = definition || this.definition;
+            return definition.dimensions.w;
+        },
+        getScaledWidth(definition) {
+            definition = definition || this.definition;
+            return this.getWidth(definition) * definition.scale.x;
+        },
+        getHeight(definition) {
+            definition = definition || this.definition;
+            return definition.dimensions.h;
+        },
+        getScaledHeight(definition) {
+            definition = definition || this.definition;
+            return this.getHeight(definition) * definition.scale.y;
+        },
         getPosition(definition) {
             definition = definition || this.definition;
             this.mesh.parent.updateMatrixWorld();
             const worldPosition = this.mesh.getWorldPosition(new Vector3());
             return {
-                x: worldPosition.x - Math.floor(definition.dimensions.w / 2 * definition.scale.x),
-                y: worldPosition.y - Math.floor(definition.dimensions.h / 2 * definition.scale.y),
+                x: worldPosition.x - Math.floor(this.getScaledWidth(definition) / 2),
+                y: worldPosition.y - Math.floor(this.getScaledHeight(definition) / 2),
                 z: worldPosition.z
             };
         },
         setX(x, definition) {
             definition = definition || this.definition;
-            this.mesh.position.x = x + Math.floor(definition.dimensions.w / 2 * definition.scale.x);
+            this.mesh.position.x = x + Math.floor(this.getScaledWidth(definition) / 2);
             if (this.selectionMesh) {
                 this.selectionMesh.position.x = this.mesh.position.x;
             }
@@ -154,7 +170,7 @@ export default {
         },
         setY(y, definition) {
             definition = definition || this.definition;
-            this.mesh.position.y = y + Math.floor(definition.dimensions.h / 2 * definition.scale.y);
+            this.mesh.position.y = y + Math.floor(this.getScaledHeight(definition) / 2);
             if (this.selectionMesh) {
                 this.selectionMesh.position.y = this.mesh.position.y;
             }

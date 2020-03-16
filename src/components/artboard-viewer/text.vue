@@ -58,6 +58,7 @@ export default {
     mesh: undefined,
     meshMaterial: undefined,
     selectionMesh: undefined,
+    boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
     created() {
         viewerPidToComponentMap.set(this.pid, this);
         this.meshMaterial = new MeshBasicMaterial({
@@ -65,13 +66,7 @@ export default {
             side: DoubleSide
         });
         this.font = this.$store.getters.resourceById(this.definition.fontResourceId).data;
-        const shapes = this.font.generateShapes('Hello world!', 32);
-        const geometry = new ShapeBufferGeometry(shapes);
-        geometry.computeBoundingBox();
-        const centerX = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
-        const centerY = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
-        geometry.translate(centerX, centerY, 0);
-        this.mesh = new Mesh(geometry, this.meshMaterial);
+        this.setText('Hello!');
         this.setX(this.definition.position.x);
         this.setY(this.definition.position.y);
         this.setZ(this.definition.position.z);
@@ -95,19 +90,53 @@ export default {
     },
     methods: {
         addSelection() {},
+        getWidth(definition) {
+            definition = definition || this.definition;
+            if (this.definition.isAutoWidth) {
+                return (this.boundingBox.max.x - this.boundingBox.min.x);
+            } else {
+                return definition.dimensions.w;
+            }
+        },
+        getScaledWidth(definition) {
+            definition = definition || this.definition;
+            return this.getWidth(definition) * definition.scale.x;
+        },
+        getHeight(definition) {
+            definition = definition || this.definition;
+            if (this.definition.isAutoHeight) {
+                return (this.boundingBox.max.y - this.boundingBox.min.y);
+            } else {
+                return definition.dimensions.h;
+            }
+        },
+        getScaledHeight(definition) {
+            definition = definition || this.definition;
+            return this.getHeight(definition) * definition.scale.y;
+        },
         getPosition(definition) {
             definition = definition || this.definition;
             this.mesh.parent.updateMatrixWorld();
             const worldPosition = this.mesh.getWorldPosition(new Vector3());
             return {
-                x: worldPosition.x - Math.round(definition.dimensions.w / 2 * definition.scale.x),
-                y: worldPosition.y - Math.round(definition.dimensions.h / 2 * definition.scale.y),
+                x: worldPosition.x - Math.round(this.getScaledWidth(definition) / 2),
+                y: worldPosition.y - Math.round(this.getScaledHeight(definition) / 2),
                 z: worldPosition.z
             };
         },
+        setText(text, definition) {
+            const shapes = this.font.generateShapes(text, 32);
+            const geometry = new ShapeBufferGeometry(shapes);
+            geometry.computeBoundingBox();
+            this.boundingBox = geometry.boundingBox;
+            const centerX = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+            const centerY = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+            geometry.translate(centerX, centerY, 0);
+            this.mesh = new Mesh(geometry, this.meshMaterial);
+        },
         setX(x, definition) {
             definition = definition || this.definition;
-            this.mesh.position.x = Math.round(x + definition.dimensions.w / 2 * definition.scale.x);
+            this.mesh.position.x = Math.round(x + (this.getScaledWidth(definition) / 2));
             if (this.selectionMesh) {
                 this.selectionMesh.position.x = this.mesh.position.x;
             }
@@ -115,7 +144,7 @@ export default {
         },
         setY(y, definition) {
             definition = definition || this.definition;
-            this.mesh.position.y = Math.round(y + definition.dimensions.h / 2 * definition.scale.y);
+            this.mesh.position.y = Math.round(y + (this.getScaledHeight(definition) / 2));
             if (this.selectionMesh) {
                 this.selectionMesh.position.y = this.mesh.position.y;
             }

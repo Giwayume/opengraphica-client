@@ -156,13 +156,13 @@ export default {
                 }
             }
         },
-        'editingElementDefinition'() {
+        async 'editingElementDefinition'() {
             this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
         },
-        'editingElementDefinition.dimensions'() {
+        async 'editingElementDefinition.dimensions'() {
             this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
         },
-        'editingElementDefinition.position'() {
+        async 'editingElementDefinition.position'() {
             this.editingElementBoundingBox = this.getEditingElementBoundingBox(this.editingElementDefinition);
         },
         async 'editingElementDefinition.scale'() {
